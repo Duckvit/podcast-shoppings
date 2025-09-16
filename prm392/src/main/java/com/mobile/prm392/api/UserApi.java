@@ -1,8 +1,11 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.user.UserResponse;
+import com.mobile.prm392.model.user.UserUpdateRequest;
 import com.mobile.prm392.services.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,47 +18,82 @@ import java.util.Optional;
 @SecurityRequirement(name = "api") // tao controller moi nho copy qua
 public class UserApi {
 
-    private final UserService userService;
-
-    public UserApi(UserService userService) {
-        this.userService = userService;
-    }
+    @Autowired
+    private UserService userService;
 
     // Lấy tất cả user
     @GetMapping
-    public ResponseEntity<List<User>> getAllUsers() {
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     // Lấy user theo ID
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Long id) {
-        Optional<User> user = userService.getUserById(id);
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+        try {
+            UserResponse user = userService.getUserById(id);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     // Lấy user theo username
     @GetMapping("/username/{username}")
-    public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
-        Optional<User> user = userService.getUserByUsername(username);
-        return user.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
+        try {
+            UserResponse user = userService.getUserByUsername(username);
+            return ResponseEntity.ok(user);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // Cập nhật user
+    // Cập nhật profile user
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        // đảm bảo set id đúng user cần update
-        user.setId(id);
-        return ResponseEntity.ok(userService.updateUser(user));
+    public ResponseEntity<UserResponse> updateUser(@PathVariable Long id,
+                                                   @RequestBody UserUpdateRequest request) {
+        try {
+            UserResponse updated = userService.updateUser(id, request.getFullName(), request.getPhoneNumber());
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // Xóa user
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        // Nếu muốn dùng UUID thì đổi @PathVariable thành UUID
-        // nhưng hiện tại service comment delete nên tạm thời không dùng
-        return ResponseEntity.noContent().build();
+    // Cập nhật role của user
+    @PutMapping("/{id}/role")
+    public ResponseEntity<UserResponse> updateRole(@PathVariable Long id,
+                                                   @RequestBody String request) {
+        try {
+            UserResponse updated = userService.updateRole(id, request);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
+
+    // Deactivate user
+    @DeleteMapping("/{id}")
+    public ResponseEntity<UserResponse> deactivateUser(@PathVariable Long id) {
+        try {
+            UserResponse updated = userService.deactivateUser(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    // Reactivate user
+    @PutMapping("/reactivate/{id}")
+    public ResponseEntity<UserResponse> reactivateUser(@PathVariable Long id) {
+        try {
+            UserResponse updated = userService.reactivateUser(id);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }

@@ -10,6 +10,7 @@ import com.mobile.prm392.model.authentication.RegisterResponse;
 import com.mobile.prm392.repositories.IUserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -25,15 +26,19 @@ import org.springframework.stereotype.Service;
 public class AuthenticationService implements UserDetailsService {
 
     @Autowired
+    @Lazy
     IUserRepository userRepository;
 
     @Autowired
+    @Lazy
     PasswordEncoder passwordEncoder;
 
     @Autowired
+    @Lazy
     ModelMapper modelMapper;
 
     @Autowired
+    @Lazy
     TokenService tokenService;
 
     @Autowired
@@ -75,6 +80,8 @@ public class AuthenticationService implements UserDetailsService {
             User account = new User();
             account.setUsername(registerRequest.getUsername());
             account.setEmail(registerRequest.getEmail());
+            account.setFullName(registerRequest.getFullName());
+            account.setPhoneNumber(registerRequest.getPhoneNumber());
             account.setPassword(passwordEncoder.encode(registerRequest.getPasswordHash())); // ✅ encode đúng
 
             User newAccount = userRepository.save(account);

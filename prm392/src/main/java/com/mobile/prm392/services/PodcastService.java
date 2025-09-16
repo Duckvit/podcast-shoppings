@@ -2,10 +2,13 @@ package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.midleware.Duplicate;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import com.mobile.prm392.repositories.IUserRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -39,24 +42,75 @@ public class PodcastService {
         return podcastRepository.save(podcast);
     }
 
+    // 2. Lấy tất cả Podcast active
     public List<Podcast> getAll() {
-        return podcastRepository.findAll();
+        return podcastRepository.findAll()
+                .stream()
+                .filter(Podcast::isActive)
+                .toList();
     }
 
+    // 3. Lấy theo ID
     public Optional<Podcast> getById(Long id) {
-        return podcastRepository.findById(id);
+        return podcastRepository.findById(id)
+                .filter(Podcast::isActive);
     }
 
-    public List<Podcast> getByCreator(Long creatorId) {
-        return podcastRepository.findByUserId(creatorId);
+    // 4. Lấy theo user hiện tại
+    public List<Podcast> getMyPodcasts() {
+        User user = authenticationService.getCurrentUser();
+        return podcastRepository.findByUserId(user.getId());
     }
 
-    public Podcast save(Podcast podcast) {
+    // 5. Update Podcast
+    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file) throws IOException {
+        User user = authenticationService.getCurrentUser();
+        Podcast podcast = podcastRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
+
+        if (!podcast.getUser().getId().equals(user.getId())) {
+            throw new Duplicate("Bạn không có quyền sửa podcast này");
+        }
+
+        if (title != null) podcast.setTitle(title);
+        if (description != null) podcast.setDescription(description);
+
+        // Nếu có file mới thì upload lại
+        if (file != null && !file.isEmpty()) {
+            String audioUrl = cloudinaryService.uploadAudio(file);
+            podcast.setAudioUrl(audioUrl);
+        }
+
+        podcast.setUpdatedAt(java.time.LocalDateTime.now());
         return podcastRepository.save(podcast);
     }
 
+    // 6. Xóa (Soft Delete)
     public void delete(Long id) {
-        podcastRepository.deleteById(id);
+        User user = authenticationService.getCurrentUser();
+        Podcast podcast = podcastRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
+
+        if (!podcast.getUser().getId().equals(user.getId())) {
+            throw new Duplicate("Bạn không có quyền xóa podcast này");
+        }
+
+        podcast.setActive(false);
+        podcastRepository.save(podcast);
+    }
+
+    // 7. Restore
+    public Podcast restore(Long id) {
+        User user = authenticationService.getCurrentUser();
+        Podcast podcast = podcastRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
+
+        if (!podcast.getUser().getId().equals(user.getId())) {
+            throw new Duplicate("Bạn không có quyền khôi phục podcast này");
+        }
+
+        podcast.setActive(true);
+        return podcastRepository.save(podcast);
     }
 }
 

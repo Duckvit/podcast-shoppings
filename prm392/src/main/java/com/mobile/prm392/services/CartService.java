@@ -5,6 +5,7 @@ import com.mobile.prm392.entities.CartItem;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.repositories.ICartItemRepository;
 import com.mobile.prm392.repositories.ICartRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,7 @@ public class CartService {
 
     public Cart getCartById(Long cartId) {
         return cartRepository.findById(cartId)
-                .orElseThrow(() -> new RuntimeException("Cart not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
     }
 
     public List<Cart> getCartsByUser(Long userId) {

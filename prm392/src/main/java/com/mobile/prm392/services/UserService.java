@@ -1,46 +1,88 @@
 package com.mobile.prm392.services;
 
-
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.user.UserResponse;
 import com.mobile.prm392.repositories.IUserRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserService {
 
     @Autowired
-    IUserRepository userRepository;
+    private IUserRepository userRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
 
-
-
-    // Lấy user theo ID
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    // 1. Lấy user theo ID
+    public UserResponse getUserById(Long id) {
+        User user = getUserEntity(id);
+        return modelMapper.map(user, UserResponse.class);
     }
 
-    // Lấy user theo username
-    public Optional<User> getUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+    // 2. Lấy user theo username
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+        return modelMapper.map(user, UserResponse.class);
     }
 
-    // Lấy tất cả user
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
+    // 3. Lấy tất cả user
+    public List<UserResponse> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(user -> modelMapper.map(user, UserResponse.class))
+                .toList();
     }
 
-    // Cập nhật user
-    public User updateUser(User user) {
-        return userRepository.save(user);
+    // 4. Update profile
+    public UserResponse updateUser(Long id, String fullName, String phoneNumber) {
+        User user = getUserEntity(id);
+        if (fullName != null && !fullName.isBlank()) {
+            user.setFullName(fullName);
+        }
+        if (phoneNumber != null && !phoneNumber.isBlank()) {
+            user.setPhoneNumber(phoneNumber);
+        }
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserResponse.class);
     }
 
-    // Xóa user
-//    public void deleteUser(UUID id) {
-//        userRepository.deleteById(id);
-//    }
+    // 5. Update role
+    public UserResponse updateRole(Long id, String role) {
+        User user = getUserEntity(id);
+        user.setRole(role);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserResponse.class);
+    }
+
+    // 6. Deactivate user
+    public UserResponse deactivateUser(Long id) {
+        User user = getUserEntity(id);
+        user.setActive(false);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserResponse.class);
+    }
+
+    // 7. Reactivate user
+    public UserResponse reactivateUser(Long id) {
+        User user = getUserEntity(id);
+        user.setActive(true);
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        User updated = userRepository.save(user);
+        return modelMapper.map(updated, UserResponse.class);
+    }
+
+
+    // Private helper
+    private User getUserEntity(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User không tồn tại"));
+    }
 }

@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.PodcastRating;
+import com.mobile.prm392.model.podcastRating.PodcastRatingRequest;
 import com.mobile.prm392.services.PodcastRatingService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,14 +18,35 @@ public class PodcastRatingApi {
     @Autowired
     private PodcastRatingService podcastRatingService;
 
-    @GetMapping("/podcast/{podcastId}")
-    public ResponseEntity<List<PodcastRating>> getByPodcast(@PathVariable Long podcastId) {
-        return ResponseEntity.ok(podcastRatingService.getByPodcast(podcastId));
+    // 1. Rate podcast (tạo mới hoặc update)
+    @PostMapping("/ratings/{podcastId}")
+    public ResponseEntity<PodcastRating> ratePodcast(
+            @PathVariable Long podcastId,
+            @RequestBody PodcastRatingRequest request) {
+
+        PodcastRating savedRating = podcastRatingService.ratePodcast(podcastId, request.getRating(), request.getComment());
+        return ResponseEntity.ok(savedRating);
     }
 
-    @PostMapping
-    public ResponseEntity<PodcastRating> create(@RequestBody PodcastRating rating) {
-        return ResponseEntity.ok(podcastRatingService.save(rating));
+    // 2. Lấy danh sách rating theo podcast
+    @GetMapping("/ratings/{podcastId}")
+    public ResponseEntity<List<PodcastRating>> getRatingsByPodcast(@PathVariable Long podcastId) {
+        List<PodcastRating> ratings = podcastRatingService.getByPodcast(podcastId);
+        return ResponseEntity.ok(ratings);
+    }
+
+    // 3. Lấy trung bình rating
+    @GetMapping("/ratings/average/{podcastId}")
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long podcastId) {
+        double average = podcastRatingService.getAverageRating(podcastId);
+        return ResponseEntity.ok(average);
+    }
+
+    // 4. Xóa mềm rating của user
+    @DeleteMapping("/ratings/{podcastId}")
+    public ResponseEntity<String> deleteRating(@PathVariable Long podcastId) {
+        podcastRatingService.deleteRating(podcastId);
+        return ResponseEntity.ok("Rating đã được xóa mềm thành công");
     }
 }
 

@@ -34,7 +34,7 @@ public class User implements UserDetails {
     private String phoneNumber;
 
     @Column(length = 20)
-    private String role = "customer"; // customer/admin/artist
+    private String role = "user"; // customer/admin/artist
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -56,10 +56,12 @@ public class User implements UserDetails {
 
     // User có thể favorite nhiều podcast
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<FavoritePodcast> favoritePodcasts;
 
     // User có thể rating nhiều podcast
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<PodcastRating> podcastRatings;
 
 

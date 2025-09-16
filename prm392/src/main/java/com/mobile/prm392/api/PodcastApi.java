@@ -40,4 +40,46 @@ public class PodcastApi {
         return ResponseEntity.ok(podcast);
     }
 
+    @GetMapping
+    public ResponseEntity<List<Podcast>> getAll() {
+        return ResponseEntity.ok(podcastService.getAll());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Podcast> getById(@PathVariable Long id) {
+        return podcastService.getById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<Podcast>> getMyPodcasts() {
+        return ResponseEntity.ok(podcastService.getMyPodcasts());
+    }
+
+    @PutMapping(
+            value = "/{id}",
+            consumes = {"multipart/form-data"}
+    )
+    public ResponseEntity<Podcast> updatePodcast(
+            @PathVariable Long id,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) String description,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file));
+    }
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deletePodcast(@PathVariable Long id) {
+        podcastService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{id}/restore")
+    public ResponseEntity<Podcast> restorePodcast(@PathVariable Long id) {
+        return ResponseEntity.ok(podcastService.restore(id));
+    }
+
 }

@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.FavoritePodcast;
+import com.mobile.prm392.model.favoritePodcast.FavoritePodcastResponse;
 import com.mobile.prm392.services.FavoritePodcastService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,20 +18,25 @@ public class FavoritePodcastApi {
     @Autowired
     private FavoritePodcastService favoritePodcastService;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<FavoritePodcast>> getByUser(@PathVariable Long userId) {
-        return ResponseEntity.ok(favoritePodcastService.getByUser(userId));
+    // 1. Lấy danh sách favorite của user hiện tại
+    @GetMapping
+    public ResponseEntity<List<FavoritePodcastResponse>> getFavorites() {
+        List<FavoritePodcastResponse> favorites = favoritePodcastService.getFavoritesOfCurrentUser();
+        return ResponseEntity.ok(favorites);
     }
 
-    @PostMapping
-    public ResponseEntity<FavoritePodcast> create(@RequestBody FavoritePodcast favorite) {
-        return ResponseEntity.ok(favoritePodcastService.save(favorite));
+    // 2. Thêm hoặc đánh dấu favorite
+    @PostMapping("/{podcastId}")
+    public ResponseEntity<FavoritePodcast> addFavorite(@PathVariable Long podcastId) {
+        FavoritePodcast favorite = favoritePodcastService.toggleFavorite(podcastId);
+        return ResponseEntity.ok(favorite);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        favoritePodcastService.delete(id);
-        return ResponseEntity.noContent().build();
+    // 3. Xóa mềm favorite
+    @DeleteMapping("/{podcastId}")
+    public ResponseEntity<String> removeFavorite(@PathVariable Long podcastId) {
+        favoritePodcastService.removeFavorite(podcastId);
+        return ResponseEntity.ok("Favorite đã được xóa mềm thành công");
     }
 }
 
