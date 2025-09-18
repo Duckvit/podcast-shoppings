@@ -9,7 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +21,9 @@ public class ProductService {
 
     @Autowired
     private IProductRepository productRepository;
+
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     // Lấy tất cả sản phẩm
     public ProductPageResponse getAllProducts(int page, int size) {
@@ -39,63 +44,48 @@ public class ProductService {
     }
 
     // Tạo sản phẩm mới
-    public Product createProduct(ProductRequest productRequest) {
+    public Product createProduct(String name, String description, Double price, Integer stockQuantity, MultipartFile file) throws IOException {
+        // Upload ảnh lên Cloudinary
+        String imageUrl = cloudinaryService.uploadImage(file);
 
-        Optional<Product> product = productRepository.findByName(productRequest.getName());
-        if(product.isPresent()){
-            // Nếu tồn tại -> cộng thêm số lượng kho
-            Product newProduct = product.get();
-
-//            newProduct.setName(productRequest.getName());
-//            newProduct.setDescription(productRequest.getDescription());
-//            newProduct.setPrice(productRequest.getPrice());
-            newProduct.setStockQuantity(newProduct.getStockQuantity() + productRequest.getStockQuantity());
-//            newProduct.setImageUrl(newProduct.getImageUrl());
-            newProduct.setUpdatedAt(LocalDateTime.now());
-
-            return productRepository.save(newProduct);
-
-        }else{
-            // Nếu chưa có -> tạo mới
-            Product newProduct = new Product();
-            newProduct.setName(productRequest.getName());
-            newProduct.setDescription(productRequest.getDescription());
-            newProduct.setPrice(productRequest.getPrice());
-            newProduct.setStockQuantity(productRequest.getStockQuantity());
-            newProduct.setImageUrl(productRequest.getImageUrl());
-            newProduct.setCreatedAt(LocalDateTime.now());
-
-            return productRepository.save(newProduct);
+        // Nếu sản phẩm đã tồn tại -> cộng thêm số lượng
+        Optional<Product> productOpt = productRepository.findByName(name);
+        if (productOpt.isPresent()) {
+            Product existing = productOpt.get();
+            existing.setStockQuantity(existing.getStockQuantity() + stockQuantity);
+            existing.setUpdatedAt(LocalDateTime.now());
+            return productRepository.save(existing);
         }
+
+        // Nếu chưa có -> tạo mới
+        Product newProduct = new Product();
+        newProduct.setName(name);
+        newProduct.setDescription(description);
+        newProduct.setPrice(price);
+        newProduct.setStockQuantity(stockQuantity);
+        newProduct.setImageUrl(imageUrl);
+        newProduct.setCreatedAt(LocalDateTime.now());
+
+        return productRepository.save(newProduct);
     }
 
     // Cập nhật sản phẩm
-    public Product updateProduct(Long id, ProductRequest productRequest) {
+    public Product updateProduct(Long id, String name, String description, Double price, Integer stockQuantity, MultipartFile file) throws IOException {
         Product existingProduct = productRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
 
-        if (productRequest.getName() != null) {
-            existingProduct.setName(productRequest.getName());
-        }
+        if (name != null) existingProduct.setName(name);
+        if (description != null) existingProduct.setDescription(description);
+        if (price != null) existingProduct.setPrice(price);
+        if (stockQuantity != null) existingProduct.setStockQuantity(stockQuantity);
 
-        if (productRequest.getDescription() != null) {
-            existingProduct.setDescription(productRequest.getDescription());
-        }
-
-        if (productRequest.getPrice() != null) {
-            existingProduct.setPrice(productRequest.getPrice());
-        }
-
-        if (productRequest.getStockQuantity() != null) {
-            existingProduct.setStockQuantity(productRequest.getStockQuantity());
-        }
-
-        if (productRequest.getImageUrl() != null) {
-            existingProduct.setImageUrl(productRequest.getImageUrl());
+        // Nếu có file ảnh mới thì upload lên Cloudinary
+        if (file != null && !file.isEmpty()) {
+            String imageUrl = cloudinaryService.uploadImage(file);
+            existingProduct.setImageUrl(imageUrl);
         }
 
         existingProduct.setUpdatedAt(LocalDateTime.now());
-
         return productRepository.save(existingProduct);
     }
 

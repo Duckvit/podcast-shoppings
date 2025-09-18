@@ -1,6 +1,8 @@
 package com.mobile.prm392.api;
 
+import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.entities.Payment;
+import com.mobile.prm392.model.order.OrderRequest;
 import com.mobile.prm392.services.PaymentService;
 import com.mobile.prm392.services.TransactionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -32,7 +34,7 @@ public class PaymentApi {
 
     // Lấy payment theo id
     @GetMapping("/{id}")
-    public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
+    public ResponseEntity getPaymentById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(paymentService.getPaymentById(id));
         } catch (EntityNotFoundException ex) {
@@ -50,6 +52,13 @@ public class PaymentApi {
 //            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 //        }
 //    }
+
+    //thanh toan
+    @PostMapping
+    public ResponseEntity payOrder(@RequestParam Long orderId) throws Exception {
+        String vnpayUrl = paymentService.createUrl(orderId);
+        return ResponseEntity.ok(vnpayUrl);
+    }
 
     // Cập nhật payment
     @PutMapping("/{id}")

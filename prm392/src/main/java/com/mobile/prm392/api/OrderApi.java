@@ -30,7 +30,7 @@ public class OrderApi {
 
     // Lấy order theo id
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    public ResponseEntity getOrderById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(orderService.getOrderById(id));
         } catch (EntityNotFoundException ex) {
@@ -41,8 +41,8 @@ public class OrderApi {
     // Tạo order mới
     @PostMapping
     public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
-        String vnPayUrl = orderService.createUrl(orderRequest);
-        return ResponseEntity.ok(vnPayUrl);
+        Order order = orderService.createOrder(orderRequest);
+        return ResponseEntity.ok(order);
     }
 
     // Cập nhật order

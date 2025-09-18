@@ -2,6 +2,8 @@ package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.Cart;
 import com.mobile.prm392.entities.CartItem;
+import com.mobile.prm392.entities.Order;
+import com.mobile.prm392.model.cart.CartResponse;
 import com.mobile.prm392.services.CartService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,35 +20,25 @@ public class CartApi {
     @Autowired
     private CartService cartService;
 
-//    @PostMapping
-//    public ResponseEntity<Cart> createCart(@RequestBody Cart cart) {
-//        return ResponseEntity.ok(cartService.createCart(cart));
-//    }
-//
-//    @GetMapping("/user/{userId}")
-//    public ResponseEntity<List<Cart>> getCartsByUser(@PathVariable Long userId) {
-//        return ResponseEntity.ok(cartService.getCartsByUser(userId));
-//    }
-//
-//    @GetMapping("/{id}")
-//    public ResponseEntity<Cart> getCart(@PathVariable Long id) {
-//        return ResponseEntity.ok(cartService.getCart(id));
-//    }
-//
-//    @PostMapping("/{cartId}/items")
-//    public ResponseEntity<CartItem> addItem(@PathVariable Long cartId, @RequestBody CartItem item) {
-//        return ResponseEntity.ok(cartService.addItemToCart(cartId, item));
-//    }
-//
-//    @GetMapping("/{cartId}/items")
-//    public ResponseEntity<List<CartItem>> getItems(@PathVariable Long cartId) {
-//        return ResponseEntity.ok(cartService.getItems(cartId));
-//    }
-//
-//    @DeleteMapping("/items/{itemId}")
-//    public ResponseEntity<Void> removeItem(@PathVariable Long itemId) {
-//        cartService.removeItem(itemId);
-//        return ResponseEntity.noContent().build();
-//    }
+    // Lấy giỏ hàng active của user
+    @GetMapping
+    public ResponseEntity getCart() {
+        CartResponse cart = cartService.getOrCreateCartResponse();
+        return ResponseEntity.ok(cart);
+    }
+
+    // Tính tổng tiền giỏ hàng
+    @GetMapping("/total")
+    public ResponseEntity<Double> getTotal() {
+        double total = cartService.calculateTotal();
+        return ResponseEntity.ok(total);
+    }
+
+    // Checkout giỏ hàng → tạo Order
+    @PostMapping("/checkout")
+    public ResponseEntity checkoutCart() {
+        Order order = cartService.checkoutCart();
+        return ResponseEntity.ok(order);
+    }
 }
 

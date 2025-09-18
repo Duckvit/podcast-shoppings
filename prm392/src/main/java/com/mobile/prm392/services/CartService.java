@@ -1,51 +1,98 @@
 package com.mobile.prm392.services;
 
-import com.mobile.prm392.entities.Cart;
-import com.mobile.prm392.entities.CartItem;
-import com.mobile.prm392.entities.User;
-import com.mobile.prm392.repositories.ICartItemRepository;
+import com.mobile.prm392.entities.*;
+import com.mobile.prm392.model.cart.CartResponse;
 import com.mobile.prm392.repositories.ICartRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.mobile.prm392.repositories.IOrderRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 public class CartService {
+
     @Autowired
     private ICartRepository cartRepository;
 
     @Autowired
     private AuthenticationService authenticationService;
 
-    // Lấy giỏ hàng active của user, nếu chưa có thì tạo
-    public Cart getOrCreateCart(Long userId) {
+    @Autowired
+    private CartItemService cartItemService;
 
+    @Autowired
+    private IOrderRepository orderRepository;
+
+    @Autowired
+    private ModelMapper modelMapper;
+
+    // Lấy giỏ hàng active của user hoặc tạo mới
+    public Cart getOrCreateCart() {
         User user = authenticationService.getCurrentUser();
-
-        return cartRepository.findByUserIdAndIsActiveTrue(userId)
+        return cartRepository.findByUserIdAndIsActiveTrue(user.getId())
                 .orElseGet(() -> {
                     Cart cart = new Cart();
                     cart.setUser(user);
+                    cart.setActive(true);
                     return cartRepository.save(cart);
                 });
     }
 
-    public Cart getCartById(Long cartId) {
-        return cartRepository.findById(cartId)
-                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+    // lay gio hang gui len api
+
+    public CartResponse getOrCreateCartResponse() {
+        User user = authenticationService.getCurrentUser();
+
+        Cart cart = cartRepository.findByUserIdAndIsActiveTrue(user.getId())
+                .orElseGet(() -> {
+                    Cart newCart = new Cart();
+                    newCart.setUser(user);
+                    newCart.setActive(true);
+                    return cartRepository.save(newCart);
+                });
+
+        // Dùng ModelMapper để map sang DTO
+        return modelMapper.map(cart, CartResponse.class);
     }
 
-    public List<Cart> getCartsByUser(Long userId) {
-        return cartRepository.findAll()
-                .stream()
-                .filter(c -> c.getUser().getId().equals(userId))
-                .toList();
+
+    // Tính tổng tiền giỏ hàng
+    public double calculateTotal() {
+        Cart cart = getOrCreateCart();
+        return cartItemService.calculateTotal(cart);
     }
 
-    public Cart saveCart(Cart cart) {
-        return cartRepository.save(cart);
+    // Checkout: từ cart tạo Order
+
+    public Order checkoutCart() {
+        Cart cart = getOrCreateCart();
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalStateException("Giỏ hàng đang trống!");
+        }
+
+        Order order = new Order();
+        order.setUser(cart.getUser());
+        order.setCreatedAt(LocalDateTime.now());
+        order.setUpdatedAt(LocalDateTime.now());
+        order.setStatus("Pending");
+
+        List<OrderItem> orderItems = cartItemService.convertToOrderItems(cart, order);
+        double totalAmount = orderItems.stream()
+                .mapToDouble(oi -> oi.getPrice() * oi.getQuantity())
+                .sum();
+
+        order.setItems(orderItems);
+        order.setTotalAmount(totalAmount);
+
+        // Disable cart sau khi checkout
+        cart.setActive(false);
+        cartRepository.save(cart);
+
+        return orderRepository.save(order);
     }
 }
+
 
