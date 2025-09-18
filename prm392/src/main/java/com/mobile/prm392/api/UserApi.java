@@ -23,8 +23,8 @@ public class UserApi {
 
     // Lấy tất cả user
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity getAllUsers(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(userService.getAllUsers(page, size));
     }
 
     // Lấy user theo ID

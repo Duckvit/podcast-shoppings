@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.FavoritePodcast;
+import com.mobile.prm392.model.favoritePodcast.FavoritePodcastPageResonse;
 import com.mobile.prm392.model.favoritePodcast.FavoritePodcastResponse;
 import com.mobile.prm392.services.FavoritePodcastService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -20,8 +21,8 @@ public class FavoritePodcastApi {
 
     // 1. Lấy danh sách favorite của user hiện tại
     @GetMapping
-    public ResponseEntity<List<FavoritePodcastResponse>> getFavorites() {
-        List<FavoritePodcastResponse> favorites = favoritePodcastService.getFavoritesOfCurrentUser();
+    public ResponseEntity<FavoritePodcastPageResonse> getFavorites(@RequestParam int page, @RequestParam int size) {
+        FavoritePodcastPageResonse favorites = favoritePodcastService.getFavoritesOfCurrentUser(page, size);
         return ResponseEntity.ok(favorites);
     }
 

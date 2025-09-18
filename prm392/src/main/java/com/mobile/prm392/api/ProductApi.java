@@ -22,8 +22,8 @@ public class ProductApi {
 
     // Lấy tất cả sản phẩm
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    public ResponseEntity getAllProducts(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(productService.getAllProducts(page, size));
     }
 
     // Lấy sản phẩm theo id

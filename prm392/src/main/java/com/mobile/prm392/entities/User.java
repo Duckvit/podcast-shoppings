@@ -44,9 +44,11 @@ public class User implements UserDetails {
 
     // Quan hệ
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Cart> carts;
 
     // User có thể tạo nhiều podcast
@@ -63,6 +65,15 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user")
     @JsonIgnore
     private List<PodcastRating> podcastRatings;
+
+    @OneToMany(mappedBy = "from")
+    @JsonIgnore
+    private List<Transaction> transactionsFrom; // User có thể tham gia nhiều Transaction
+
+    @OneToMany(mappedBy = "to")
+    @JsonIgnore
+    private List<Transaction> transactionsTo; // User có thể tham gia nhiều Transaction
+
 
 
 

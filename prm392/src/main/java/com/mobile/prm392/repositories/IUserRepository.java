@@ -3,6 +3,8 @@ package com.mobile.prm392.repositories;
 
 
 import com.mobile.prm392.entities.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -22,4 +24,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 
     // Kiểm tra email đã tồn tại chưa
     boolean existsByEmail(String email);
+
+    Page<User> findAll(Pageable pageable);
+
+    User findByRole(String role);
 }

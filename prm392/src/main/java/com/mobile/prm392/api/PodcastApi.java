@@ -41,20 +41,18 @@ public class PodcastApi {
     }
 
     @GetMapping
-    public ResponseEntity<List<Podcast>> getAll() {
-        return ResponseEntity.ok(podcastService.getAll());
+    public ResponseEntity getAll(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(podcastService.getAll(page, size));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Podcast> getById(@PathVariable Long id) {
-        return podcastService.getById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity getById(@PathVariable Long id) {
+        return ResponseEntity.ok(podcastService.getById(id));
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<Podcast>> getMyPodcasts() {
-        return ResponseEntity.ok(podcastService.getMyPodcasts());
+    public ResponseEntity getMyPodcasts(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(podcastService.getMyPodcasts(page, size));
     }
 
     @PutMapping(

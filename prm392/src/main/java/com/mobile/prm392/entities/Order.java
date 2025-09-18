@@ -1,5 +1,6 @@
 package com.mobile.prm392.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -30,7 +31,13 @@ public class Order {
     private LocalDateTime updatedAt = LocalDateTime.now();
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL) // Casecade ALL de khi xoa order thi xoa het order item luon ( chuc nang cho phep luu cac bang reference toi no )
+    @JsonIgnore
     private List<OrderItem> items;
+
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Payment payment; // Mỗi Order chỉ có 1 Payment
 
     private boolean isActive = true;
 }

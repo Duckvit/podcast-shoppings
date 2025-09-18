@@ -2,6 +2,7 @@ package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.Payment;
 import com.mobile.prm392.services.PaymentService;
+import com.mobile.prm392.services.TransactionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,10 +21,13 @@ public class PaymentApi {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private TransactionService transactionService;
+
     // Lấy tất cả payments
     @GetMapping
-    public ResponseEntity<List<Payment>> getAllPayments() {
-        return ResponseEntity.ok(paymentService.getAllPayments());
+    public ResponseEntity getAllPayments(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(paymentService.getAllPayments(page, size));
     }
 
     // Lấy payment theo id
@@ -37,15 +41,15 @@ public class PaymentApi {
     }
 
     // Tạo mới payment
-    @PostMapping
-    public ResponseEntity<Payment> createPayment(@RequestBody Payment payment) {
-        try {
-            Payment created = paymentService.createPayment(payment);
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (IllegalStateException ex) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-        }
-    }
+//    @PostMapping
+//    public ResponseEntity<Payment> createPayment(@RequestParam Long orderId) {
+//        try {
+//            Payment created = paymentService.createPayment(payment);
+//            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+//        } catch (IllegalStateException ex) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+//        }
+//    }
 
     // Cập nhật payment
     @PutMapping("/{id}")

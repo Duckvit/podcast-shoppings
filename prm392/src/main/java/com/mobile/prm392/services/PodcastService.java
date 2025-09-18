@@ -3,10 +3,13 @@ package com.mobile.prm392.services;
 import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.midleware.Duplicate;
+import com.mobile.prm392.model.podcast.PodcastPageResponse;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import com.mobile.prm392.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.multipart.MultipartFile;
@@ -43,23 +46,34 @@ public class PodcastService {
     }
 
     // 2. Lấy tất cả Podcast active
-    public List<Podcast> getAll() {
-        return podcastRepository.findAll()
-                .stream()
-                .filter(Podcast::isActive)
-                .toList();
+    public PodcastPageResponse getAll(int page, int size) {
+        Page podcast = podcastRepository.findAllByIsActiveTrue(PageRequest.of(page - 1, size));
+
+        PodcastPageResponse response = new PodcastPageResponse();
+        response.setContent(podcast.getContent());
+        response.setTotalPages(podcast.getTotalPages());
+        response.setPageNumber(podcast.getNumber());
+        response.setTotalElements(podcast.getTotalElements());
+        return response;
     }
 
     // 3. Lấy theo ID
-    public Optional<Podcast> getById(Long id) {
+    public Podcast getById(Long id) {
         return podcastRepository.findById(id)
-                .filter(Podcast::isActive);
+                .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
     }
 
     // 4. Lấy theo user hiện tại
-    public List<Podcast> getMyPodcasts() {
+    public PodcastPageResponse getMyPodcasts(int page, int size) {
         User user = authenticationService.getCurrentUser();
-        return podcastRepository.findByUserId(user.getId());
+        Page podcast = podcastRepository.findByUserIdAndIsActiveTrue(user.getId(), PageRequest.of(page - 1, size));
+
+        PodcastPageResponse response = new PodcastPageResponse();
+        response.setContent(podcast.getContent());
+        response.setTotalPages(podcast.getTotalPages());
+        response.setPageNumber(podcast.getNumber());
+        response.setTotalElements(podcast.getTotalElements());
+        return response;
     }
 
     // 5. Update Podcast

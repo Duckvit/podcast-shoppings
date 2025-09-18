@@ -1,10 +1,13 @@
 package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.Product;
+import com.mobile.prm392.model.product.ProductPageResponse;
 import com.mobile.prm392.model.product.ProductRequest;
 import com.mobile.prm392.repositories.IProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -18,8 +21,15 @@ public class ProductService {
     private IProductRepository productRepository;
 
     // Lấy tất cả sản phẩm
-    public List<Product> getAllProducts() {
-        return productRepository.findAll();
+    public ProductPageResponse getAllProducts(int page, int size) {
+        Page product = productRepository.findAll(PageRequest.of(page - 1, size));
+
+        ProductPageResponse response = new ProductPageResponse();
+        response.setTotalPages(product.getTotalPages());
+        response.setContent(product.getContent());
+        response.setPageNumber(product.getNumber());
+        response.setTotalElements(product.getTotalElements());
+        return response;
     }
 
     // Lấy sản phẩm theo id

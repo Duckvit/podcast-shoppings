@@ -3,6 +3,7 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.entities.Transaction;
 import com.mobile.prm392.services.TransactionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,16 +16,15 @@ import java.util.Optional;
 @SecurityRequirement(name = "api") // tao controller moi nho copy qua
 public class TransactionApi {
 
-    private final TransactionService transactionService;
+    @Autowired
+    private TransactionService transactionService;
 
-    public TransactionApi(TransactionService transactionService) {
-        this.transactionService = transactionService;
-    }
+
 
     // Lấy tất cả transaction
     @GetMapping
-    public ResponseEntity<List<Transaction>> getAllTransactions() {
-        return ResponseEntity.ok(transactionService.getAllTransactions());
+    public ResponseEntity getAllTransactions(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(transactionService.getAllTransactions(page, size));
     }
 
     // Lấy transaction theo ID
@@ -37,26 +37,27 @@ public class TransactionApi {
 
     // Lấy transaction theo PaymentId
     @GetMapping("/payment/{paymentId}")
-    public ResponseEntity<List<Transaction>> getTransactionsByPaymentId(@PathVariable Long paymentId) {
-        return ResponseEntity.ok(transactionService.getTransactionsByPaymentId(paymentId));
+    public ResponseEntity getTransactionsByPaymentId(@PathVariable Long paymentId, @RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(transactionService.getTransactionsByPaymentId(paymentId, page, size));
     }
 
     // Lấy transaction theo status
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<Transaction>> getTransactionsByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(transactionService.getTransactionsByStatus(status));
+    public ResponseEntity getTransactionsByStatus(@PathVariable String status, @RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(transactionService.getTransactionsByStatus(status, page, size));
     }
 
-    // Tạo hoặc cập nhật transaction
+    // Tạo transaction thanh toán thành công
     @PostMapping
-    public ResponseEntity<Transaction> saveTransaction(@RequestBody Transaction transaction) {
-        return ResponseEntity.ok(transactionService.saveTransaction(transaction));
+    public ResponseEntity saveTransaction(@RequestParam Long orderId) {
+        transactionService.createTransactionSuccess(orderId);
+        return ResponseEntity.ok("Thanh toán thành công cho order " + orderId);
     }
 
     // Xóa transaction
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
-        transactionService.deleteTransaction(id);
-        return ResponseEntity.noContent().build();
-    }
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id) {
+//        transactionService.deleteTransaction(id);
+//        return ResponseEntity.noContent().build();
+//    }
 }

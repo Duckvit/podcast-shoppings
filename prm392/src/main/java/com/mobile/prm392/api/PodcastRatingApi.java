@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.PodcastRating;
+import com.mobile.prm392.model.podcastRating.PodcastRatingPageResponse;
 import com.mobile.prm392.model.podcastRating.PodcastRatingRequest;
 import com.mobile.prm392.services.PodcastRatingService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -30,8 +31,8 @@ public class PodcastRatingApi {
 
     // 2. Lấy danh sách rating theo podcast
     @GetMapping("/ratings/{podcastId}")
-    public ResponseEntity<List<PodcastRating>> getRatingsByPodcast(@PathVariable Long podcastId) {
-        List<PodcastRating> ratings = podcastRatingService.getByPodcast(podcastId);
+    public ResponseEntity getRatingsByPodcast(@PathVariable Long podcastId, @RequestParam int page, @RequestParam int size) {
+        PodcastRatingPageResponse ratings = podcastRatingService.getByPodcast(podcastId, page, size);
         return ResponseEntity.ok(ratings);
     }
 

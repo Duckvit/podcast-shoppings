@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.OrderItem;
+import com.mobile.prm392.model.orderItem.OrderItemPageResposne;
 import com.mobile.prm392.services.OrderItemService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,8 +23,8 @@ public class OrderItemApi {
 
     // Lấy tất cả order items
     @GetMapping
-    public ResponseEntity<List<OrderItem>> getAllOrderItems() {
-        return ResponseEntity.ok(orderItemService.getAllOrderItems());
+    public ResponseEntity<OrderItemPageResposne> getAllOrderItems(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(orderItemService.getAllOrderItems(page, size));
     }
 
     // Lấy order item theo id

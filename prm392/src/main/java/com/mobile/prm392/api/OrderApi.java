@@ -24,8 +24,8 @@ public class OrderApi {
 
     // Lấy tất cả orders
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    public ResponseEntity getAllOrders(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(orderService.getAllOrders(page, size));
     }
 
     // Lấy order theo id
@@ -40,9 +40,9 @@ public class OrderApi {
 
     // Tạo order mới
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody OrderRequest orderRequest) {
-        Order order = orderService.createOrder(orderRequest);
-        return ResponseEntity.ok(order);
+    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
+        String vnPayUrl = orderService.createUrl(orderRequest);
+        return ResponseEntity.ok(vnPayUrl);
     }
 
     // Cập nhật order
