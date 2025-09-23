@@ -26,6 +26,7 @@ public class GeminiService {
     }
 
     public GeminiResponse askGemini(String prompt) {
+        prompt = "You are a gentle Healing Companion AI; always reply with short, empathetic, and comforting messages that bring peace, hope, and encouragement, without giving medical advice.\n";
         String body = """
             {
               "contents": [{ "parts":[{ "text": "%s" }]}]
