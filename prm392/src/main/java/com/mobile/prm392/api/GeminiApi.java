@@ -3,6 +3,7 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.model.gemini.GeminiResponse;
 import com.mobile.prm392.services.GeminiService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,6 +18,7 @@ public class GeminiApi {
     }
 
     @PostMapping("/chat")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public GeminiResponse chat(@RequestParam String prompt) {
         return geminiService.askGemini(prompt);
     }

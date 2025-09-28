@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,26 +32,31 @@ public class PodcastApi {
             value = "/upload",
             consumes = {"multipart/form-data"}
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Podcast> uploadPodcast(
             @RequestParam String title,
             @RequestParam(required = false) String description,
-            @RequestPart("file") MultipartFile file) throws IOException {
+            @RequestPart("file") MultipartFile file,
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
 
-        Podcast podcast = podcastService.uploadPodcast(title, description, file);
+        Podcast podcast = podcastService.uploadPodcast(title, description, file, imageFile);
         return ResponseEntity.ok(podcast);
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getAll(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(podcastService.getAll(page, size));
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getById(@PathVariable Long id) {
         return ResponseEntity.ok(podcastService.getById(id));
     }
 
     @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getMyPodcasts(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(podcastService.getMyPodcasts(page, size));
     }
@@ -59,17 +65,20 @@ public class PodcastApi {
             value = "/{id}",
             consumes = {"multipart/form-data"}
     )
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Podcast> updatePodcast(
             @PathVariable Long id,
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String description,
-            @RequestPart(value = "file", required = false) MultipartFile file
+            @RequestPart(value = "file", required = false) MultipartFile file,
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
     ) throws IOException {
-        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file));
+        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file, imageFile));
     }
 
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePodcast(@PathVariable Long id) {
         podcastService.delete(id);
         return ResponseEntity.noContent().build();

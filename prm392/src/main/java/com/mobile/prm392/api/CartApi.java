@@ -8,6 +8,7 @@ import com.mobile.prm392.services.CartService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class CartApi {
 
     // Lấy giỏ hàng active của user
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getCart() {
         CartResponse cart = cartService.getOrCreateCartResponse();
         return ResponseEntity.ok(cart);
@@ -29,6 +31,7 @@ public class CartApi {
 
     // Tính tổng tiền giỏ hàng
     @GetMapping("/total")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Double> getTotal() {
         double total = cartService.calculateTotal();
         return ResponseEntity.ok(total);
@@ -36,6 +39,7 @@ public class CartApi {
 
     // Checkout giỏ hàng → tạo Order
     @PostMapping("/checkout")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity checkoutCart() {
         Order order = cartService.checkoutCart();
         return ResponseEntity.ok(order);

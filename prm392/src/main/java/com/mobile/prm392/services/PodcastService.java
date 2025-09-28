@@ -29,17 +29,21 @@ public class PodcastService {
     @Autowired
     private AuthenticationService authenticationService;
 
-    public Podcast uploadPodcast(String title, String description, MultipartFile file) throws IOException {
+    public Podcast uploadPodcast(String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
         User user = authenticationService.getCurrentUser();
 
         // Upload file audio lên Cloudinary
         String audioUrl = cloudinaryService.uploadAudio(file);
+
+        // Upload file anh lên Cloudinary
+        String imgUrl = cloudinaryService.uploadImage(file1);
 
         // Lưu metadata xuống DB
         Podcast podcast = new Podcast();
         podcast.setTitle(title);
         podcast.setDescription(description);
         podcast.setAudioUrl(audioUrl);
+        podcast.setImageUrl(imgUrl);
         podcast.setUser(user);
 
         return podcastRepository.save(podcast);
@@ -77,7 +81,7 @@ public class PodcastService {
     }
 
     // 5. Update Podcast
-    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file) throws IOException {
+    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
         User user = authenticationService.getCurrentUser();
         Podcast podcast = podcastRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
@@ -93,6 +97,12 @@ public class PodcastService {
         if (file != null && !file.isEmpty()) {
             String audioUrl = cloudinaryService.uploadAudio(file);
             podcast.setAudioUrl(audioUrl);
+        }
+
+        // Nếu có file mới thì upload lại
+        if (file1 != null && !file1.isEmpty()) {
+            String imgUrl = cloudinaryService.uploadImage(file1);
+            podcast.setImageUrl(imgUrl);
         }
 
         podcast.setUpdatedAt(java.time.LocalDateTime.now());

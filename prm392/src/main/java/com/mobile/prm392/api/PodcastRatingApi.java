@@ -7,6 +7,7 @@ import com.mobile.prm392.services.PodcastRatingService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class PodcastRatingApi {
 
     // 1. Rate podcast (tạo mới hoặc update)
     @PostMapping("/ratings/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<PodcastRating> ratePodcast(
             @PathVariable Long podcastId,
             @RequestBody PodcastRatingRequest request) {
@@ -31,6 +33,7 @@ public class PodcastRatingApi {
 
     // 2. Lấy danh sách rating theo podcast
     @GetMapping("/ratings/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getRatingsByPodcast(@PathVariable Long podcastId, @RequestParam int page, @RequestParam int size) {
         PodcastRatingPageResponse ratings = podcastRatingService.getByPodcast(podcastId, page, size);
         return ResponseEntity.ok(ratings);
@@ -38,6 +41,7 @@ public class PodcastRatingApi {
 
     // 3. Lấy trung bình rating
     @GetMapping("/ratings/average/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Double> getAverageRating(@PathVariable Long podcastId) {
         double average = podcastRatingService.getAverageRating(podcastId);
         return ResponseEntity.ok(average);
@@ -45,6 +49,7 @@ public class PodcastRatingApi {
 
     // 4. Xóa mềm rating của user
     @DeleteMapping("/ratings/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> deleteRating(@PathVariable Long podcastId) {
         podcastRatingService.deleteRating(podcastId);
         return ResponseEntity.ok("Rating đã được xóa mềm thành công");

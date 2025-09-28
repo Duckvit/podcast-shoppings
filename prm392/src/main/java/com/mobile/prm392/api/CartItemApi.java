@@ -7,6 +7,7 @@ import com.mobile.prm392.services.CartService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,6 +23,7 @@ public class CartItemApi {
 
     // Thêm sản phẩm vào giỏ hàng
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity addItem(@RequestParam Long productId,
                                   @RequestParam int quantity) {
         Cart cart = cartService.getOrCreateCart();
@@ -31,6 +33,7 @@ public class CartItemApi {
 
     // Cập nhật số lượng sản phẩm trong giỏ hàng
     @PutMapping("/{cartItemId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<CartItem> updateItem(@PathVariable Long cartItemId,
                                                @RequestParam int quantity) {
         CartItem item = cartItemService.updateQuantity(cartItemId, quantity);
@@ -39,6 +42,7 @@ public class CartItemApi {
 
     // Xóa sản phẩm khỏi giỏ hàng
     @DeleteMapping("/{cartItemId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> removeItem(@PathVariable Long cartItemId) {
         cartItemService.removeItem(cartItemId);
         return ResponseEntity.noContent().build();

@@ -7,6 +7,7 @@ import com.mobile.prm392.services.FavoritePodcastService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ public class FavoritePodcastApi {
 
     // 1. Lấy danh sách favorite của user hiện tại
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<FavoritePodcastPageResonse> getFavorites(@RequestParam int page, @RequestParam int size) {
         FavoritePodcastPageResonse favorites = favoritePodcastService.getFavoritesOfCurrentUser(page, size);
         return ResponseEntity.ok(favorites);
@@ -28,6 +30,7 @@ public class FavoritePodcastApi {
 
     // 2. Thêm hoặc đánh dấu favorite
     @PostMapping("/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<FavoritePodcast> addFavorite(@PathVariable Long podcastId) {
         FavoritePodcast favorite = favoritePodcastService.toggleFavorite(podcastId);
         return ResponseEntity.ok(favorite);
@@ -35,6 +38,7 @@ public class FavoritePodcastApi {
 
     // 3. Xóa mềm favorite
     @DeleteMapping("/{podcastId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<String> removeFavorite(@PathVariable Long podcastId) {
         favoritePodcastService.removeFavorite(podcastId);
         return ResponseEntity.ok("Favorite đã được xóa mềm thành công");

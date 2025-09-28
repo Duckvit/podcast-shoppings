@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -28,12 +29,14 @@ public class PaymentApi {
 
     // Lấy tất cả payments
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getAllPayments(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(paymentService.getAllPayments(page, size));
     }
 
     // Lấy payment theo id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getPaymentById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(paymentService.getPaymentById(id));
@@ -55,6 +58,7 @@ public class PaymentApi {
 
     //thanh toan
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity payOrder(@RequestParam Long orderId) throws Exception {
         String vnpayUrl = paymentService.createUrl(orderId);
         return ResponseEntity.ok(vnpayUrl);
@@ -62,6 +66,7 @@ public class PaymentApi {
 
     // Cập nhật payment
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Payment> updatePayment(@PathVariable Long id, @RequestBody Payment payment) {
         try {
             return ResponseEntity.ok(paymentService.updatePayment(id, payment));
@@ -72,6 +77,7 @@ public class PaymentApi {
 
     // Xóa payment
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePayment(@PathVariable Long id) {
         try {
             paymentService.deletePayment(id);

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,12 +28,14 @@ public class ProductApi {
 
     // Lấy tất cả sản phẩm
     @GetMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity getAllProducts(@RequestParam int page, @RequestParam int size) {
         return ResponseEntity.ok(productService.getAllProducts(page, size));
     }
 
     // Lấy sản phẩm theo id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(productService.getProductById(id));
@@ -47,6 +50,7 @@ public class ProductApi {
             @ApiResponse(responseCode = "400", description = "Sai request"),
     })
     @PostMapping(consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> createProduct(
             @RequestParam String name,
             @RequestParam String description,
@@ -59,6 +63,7 @@ public class ProductApi {
 
     @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm và có thể thay ảnh")
     @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Product> updateProduct(
             @PathVariable Long id,
             @RequestParam(required = false) String name,
@@ -72,6 +77,7 @@ public class ProductApi {
 
     // Xóa sản phẩm
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity deleteProduct(@PathVariable Long id) {
         boolean result = productService.deleteProduct(id);
         String resultString;

@@ -35,6 +35,7 @@ public class TokenService {
     public String generateTokenUser(User user){
         String token = Jwts.builder()
                 .subject(user.getId()+ "")
+                .claim("role", user.getRole())
                 .issuedAt(new Date(System.currentTimeMillis())) // 10:30
                 .expiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))
                 .signWith(getSigninKey())

@@ -29,6 +29,7 @@ public class Podcast {
     @Column(nullable = false)
     private String audioUrl;
 
+    private String imageUrl;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
