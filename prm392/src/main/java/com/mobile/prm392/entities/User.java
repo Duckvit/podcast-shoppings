@@ -1,9 +1,13 @@
 package com.mobile.prm392.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mobile.prm392.model.user.UserResponse;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
@@ -12,6 +16,8 @@ import java.util.List;
 
 @Data
 @Entity
+@Getter
+@Setter
 @Table(name = "users")
 public class User implements UserDetails {
     @Id
@@ -65,15 +71,13 @@ public class User implements UserDetails {
     private List<PodcastRating> podcastRatings;
 
 
-
     private boolean isActive = true;
+
+    private String otpCode;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-//        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
-//        authorities.add(new SimpleGrantedAuthority(this.role));
-//        return authorities;
-        return null;
+        return List.of(new SimpleGrantedAuthority(this.role));
     }
 
     public void setUsername(String username) {

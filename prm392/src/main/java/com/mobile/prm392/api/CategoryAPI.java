@@ -4,6 +4,8 @@ import com.mobile.prm392.entities.Category;
 import com.mobile.prm392.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,9 +29,11 @@ public class CategoryAPI {
     }
 
     @Operation(summary = "Tạo mới category", description = "Thêm một category mới vào hệ thống")
-    @PostMapping
-    public Category create(@RequestBody Category category) {
-        return categoryService.createCategory(category);
+
+    @PostMapping("/admin/create")
+    public ResponseEntity<Category> createCategory(@RequestBody Category dto) {
+        Category category = categoryService.createCategory(dto); // service tạo Category
+        return ResponseEntity.ok(category); // trả về đối tượng Category
     }
 
 

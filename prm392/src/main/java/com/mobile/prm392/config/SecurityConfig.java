@@ -62,7 +62,9 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép tất cả pre-flight requests
-                        .requestMatchers("/**").permitAll()
+//                        .requestMatchers("/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll() // login, register
+                                .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         // Cho phép Swagger endpoints
                         .requestMatchers("/v3/api-docs/**").permitAll()
                         .requestMatchers("/swagger-ui/**").permitAll()
