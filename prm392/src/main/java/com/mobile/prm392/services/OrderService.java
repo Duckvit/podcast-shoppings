@@ -45,7 +45,7 @@ public class OrderService {
 
     // Lấy tất cả order
     public OrderPageResponse getAllOrders(int page, int size) {
-        Page<Order> orderPage = orderRepository.findAll(PageRequest.of(page, size));
+        Page<Order> orderPage = orderRepository.findAll(PageRequest.of(page - 1, size));
 
         List<OrderResponse> content = orderPage.getContent().stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
@@ -66,7 +66,6 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
         return modelMapper.map(order, OrderResponse.class);
     }
-
     // Tạo mới order
     public Order createOrder(OrderRequest orderRequest) {
 
@@ -81,7 +80,13 @@ public class OrderService {
 
         for(OrderItemRequest orderItemRequest : orderRequest.getItems()){
 
-            Product product = productRepository.getById(orderItemRequest.getProductId());
+            Product product = productRepository.findById(orderItemRequest.getProductId())
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found: " + orderItemRequest.getProductId()));
+
+            // Kiểm tra số lượng tồn kho
+            if (product.getStockQuantity() < orderItemRequest.getQuantity()) {
+                throw new IllegalArgumentException("Not enough stock for product: " + product.getName());
+            }
 
             OrderItem orderItem = new OrderItem();
 
@@ -94,6 +99,9 @@ public class OrderService {
             orderItems.add(orderItem);
 
             totalAmount += orderItem.getPrice() * orderItem.getQuantity();
+            // Trừ số lượng tồn kho mới
+            product.setStockQuantity(product.getStockQuantity() - orderItemRequest.getQuantity());
+            productRepository.save(product);
         }
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
@@ -102,24 +110,32 @@ public class OrderService {
         return orderRepository.save(order);
     }
 
+
     // Cập nhật order
     public Order updateOrder(Long id, OrderUpdateRequest request) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
 
-        // cập nhật status nếu có
-        if (request.getStatus() != null) {
-            existingOrder.setStatus(request.getStatus());
-        }
-
-        // nếu có items mới thì cập nhật lại
+        // Nếu có items mới thì xử lý cập nhật lại
         if (request.getItems() != null && !request.getItems().isEmpty()) {
+            // Hoàn lại số lượng kho từ các order item cũ
+            for (OrderItem oldItem : existingOrder.getItems()) {
+                Product product = oldItem.getProduct();
+                product.setStockQuantity(product.getStockQuantity() + oldItem.getQuantity());
+                productRepository.save(product);
+            }
+
             List<OrderItem> newOrderItems = new ArrayList<>();
             double totalAmount = 0.0;
 
             for (OrderItemRequest orderItemRequest : request.getItems()) {
                 Product product = productRepository.findById(orderItemRequest.getProductId())
                         .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+                // Kiểm tra số lượng tồn kho
+                if (product.getStockQuantity() < orderItemRequest.getQuantity()) {
+                    throw new IllegalArgumentException("Not enough stock for product: " + product.getName());
+                }
 
                 OrderItem orderItem = new OrderItem();
                 orderItem.setOrder(existingOrder);
@@ -129,10 +145,19 @@ public class OrderService {
 
                 newOrderItems.add(orderItem);
                 totalAmount += orderItem.getPrice() * orderItem.getQuantity();
+
+                // Trừ số lượng tồn kho mới
+                product.setStockQuantity(product.getStockQuantity() - orderItemRequest.getQuantity());
+                productRepository.save(product);
             }
 
             existingOrder.setItems(newOrderItems);
             existingOrder.setTotalAmount(totalAmount);
+        }
+
+        // Cập nhật status nếu có
+        if (request.getStatus() != null) {
+            existingOrder.setStatus(request.getStatus());
         }
 
         existingOrder.setUpdatedAt(LocalDateTime.now());
@@ -140,16 +165,26 @@ public class OrderService {
     }
 
 
-    // Xóa order
+
+    // Xóa order (soft delete + hoàn lại số lượng product)
     public void deleteOrder(Long id) {
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
 
+        // Hoàn lại số lượng sản phẩm trong kho
+        for (OrderItem item : existingOrder.getItems()) {
+            Product product = item.getProduct();
+            product.setStockQuantity(product.getStockQuantity() + item.getQuantity());
+            productRepository.save(product);
+        }
+
+        // Soft delete
         existingOrder.setActive(false);
         existingOrder.setUpdatedAt(LocalDateTime.now());
 
         orderRepository.save(existingOrder);
     }
+
 
 
 

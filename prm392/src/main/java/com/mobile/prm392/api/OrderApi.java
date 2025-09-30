@@ -44,7 +44,7 @@ public class OrderApi {
     // Tạo order mới
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
+    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) {
         Order order = orderService.createOrder(orderRequest);
         return ResponseEntity.ok(order);
     }

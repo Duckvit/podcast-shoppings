@@ -64,6 +64,7 @@ public class SecurityConfig {
                         .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép tất cả pre-flight requests
 //                        .requestMatchers("/**").permitAll()
                         .requestMatchers("/api/auth/**").permitAll() // login, register
+                        .requestMatchers("/api/gemini/**").permitAll()
                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
                         // Cho phép Swagger endpoints
                         .requestMatchers("/v3/api-docs/**").permitAll()
