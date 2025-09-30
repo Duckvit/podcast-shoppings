@@ -4,18 +4,29 @@ import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.entities.OrderItem;
 import com.mobile.prm392.entities.Product;
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.order.OrderPageResponse;
 import com.mobile.prm392.model.order.OrderRequest;
+import com.mobile.prm392.model.order.OrderResponse;
 import com.mobile.prm392.model.order.OrderUpdateRequest;
 import com.mobile.prm392.model.orderItem.OrderItemRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IProductRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @Service
 public class OrderService {
@@ -29,15 +40,31 @@ public class OrderService {
     @Autowired
     private IProductRepository productRepository;
 
+    @Autowired
+    private ModelMapper modelMapper;
+
     // Lấy tất cả order
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public OrderPageResponse getAllOrders(int page, int size) {
+        Page<Order> orderPage = orderRepository.findAll(PageRequest.of(page, size));
+
+        List<OrderResponse> content = orderPage.getContent().stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
+
+        OrderPageResponse response = new OrderPageResponse();
+        response.setContent(content);
+        response.setPageNumber(orderPage.getNumber());
+        response.setTotalElements(orderPage.getTotalElements());
+        response.setTotalPages(orderPage.getTotalPages());
+        return response;
     }
 
+
     // Lấy order theo id
-    public Order getOrderById(Long id) {
-        return orderRepository.findById(id)
+    public OrderResponse getOrderById(Long id) {
+        Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
+        return modelMapper.map(order, OrderResponse.class);
     }
 
     // Tạo mới order
@@ -63,12 +90,15 @@ public class OrderService {
             orderItem.setOrder(order);
             orderItem.setProduct(product);
 
+
             orderItems.add(orderItem);
 
             totalAmount += orderItem.getPrice() * orderItem.getQuantity();
         }
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
+        order.setStatus("Pending");
+
         return orderRepository.save(order);
     }
 
@@ -120,5 +150,9 @@ public class OrderService {
 
         orderRepository.save(existingOrder);
     }
+
+
+
+
 
 }

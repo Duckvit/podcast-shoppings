@@ -25,4 +25,10 @@ public class CloudinaryService {
                 ));
         return uploadResult.get("secure_url").toString(); // trả về link audio
     }
+
+    public String uploadImage(MultipartFile file) throws IOException {
+        Map uploadResult = cloudinary.uploader().upload(file.getBytes(),
+                ObjectUtils.asMap("resource_type", "image"));
+        return uploadResult.get("url").toString();
+    }
 }

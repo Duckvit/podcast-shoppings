@@ -1,9 +1,12 @@
 package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.OrderItem;
+import com.mobile.prm392.model.orderItem.OrderItemPageResposne;
 import com.mobile.prm392.repositories.IOrderItemRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,8 +18,15 @@ public class OrderItemService {
     private IOrderItemRepository orderItemRepository;
 
     // Lấy tất cả order items
-    public List<OrderItem> getAllOrderItems() {
-        return orderItemRepository.findAll();
+    public OrderItemPageResposne getAllOrderItems(int page, int size) {
+        Page orderItem = orderItemRepository.findAll(PageRequest.of(page - 1, size));
+
+        OrderItemPageResposne response = new OrderItemPageResposne();
+        response.setContent(orderItem.getContent());
+        response.setTotalElements(orderItem.getTotalElements());
+        response.setTotalPages(orderItem.getTotalPages());
+        response.setPageNumber(orderItem.getNumber());
+        return response;
     }
 
     // Lấy order item theo id

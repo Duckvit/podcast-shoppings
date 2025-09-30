@@ -28,8 +28,8 @@ public class Payment {
 
     private Double amount;
 
-    @Column(name = "transaction_id", length = 100)
-    private String transactionId; // mã giao dịch trả về từ cổng thanh toán
+//    @Column(name = "transaction_id", length = 100)
+//    private String transactionId; // mã giao dịch trả về từ cổng thanh toán
 
 
     private LocalDateTime createdAt = LocalDateTime.now();

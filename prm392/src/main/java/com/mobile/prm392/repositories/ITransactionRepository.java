@@ -1,6 +1,8 @@
 package com.mobile.prm392.repositories;
 
 import com.mobile.prm392.entities.Transaction;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -13,4 +15,10 @@ public interface ITransactionRepository extends JpaRepository<Transaction, Long>
 
     // Tìm theo status
     List<Transaction> findByStatus(String status);
+
+    Page findAll(Pageable pageable);
+
+    Page findByPaymentId(Long paymentId, Pageable pageable);
+
+    Page findByStatus(String status, Pageable pageable);
 }

@@ -1,10 +1,13 @@
 package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.user.UserPageResponse;
 import com.mobile.prm392.model.user.UserResponse;
 import com.mobile.prm392.repositories.IUserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,10 +35,14 @@ public class UserService {
     }
 
     // 3. Lấy tất cả user
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> modelMapper.map(user, UserResponse.class))
-                .toList();
+    public UserPageResponse getAllUsers(int page, int size) {
+        Page user = userRepository.findAll(PageRequest.of(page - 1, size));
+        UserPageResponse response = new UserPageResponse();
+        response.setTotalPages(user.getTotalPages());
+        response.setContent(user.getContent());
+        response.setPageNumber(user.getNumber());
+        response.setTotalElements(user.getTotalElements());
+        return response;
     }
 
     // 4. Update profile

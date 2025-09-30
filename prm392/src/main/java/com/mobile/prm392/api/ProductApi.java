@@ -3,12 +3,18 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.entities.Product;
 import com.mobile.prm392.model.product.ProductRequest;
 import com.mobile.prm392.services.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -22,12 +28,14 @@ public class ProductApi {
 
     // Lấy tất cả sản phẩm
     @GetMapping
-    public ResponseEntity<List<Product>> getAllProducts() {
-        return ResponseEntity.ok(productService.getAllProducts());
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity getAllProducts(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(productService.getAllProducts(page, size));
     }
 
     // Lấy sản phẩm theo id
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Product> getProductById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(productService.getProductById(id));
@@ -36,22 +44,40 @@ public class ProductApi {
         }
     }
 
-    // Tạo sản phẩm mới
-    @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody ProductRequest productRequest) {
-        Product product = productService.createProduct(productRequest);
-        return ResponseEntity.ok(product);
+    @Operation(summary = "Tạo sản phẩm mới", description = "Upload ảnh sản phẩm lên Cloudinary")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Tạo thành công"),
+            @ApiResponse(responseCode = "400", description = "Sai request"),
+    })
+    @PostMapping(consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Product> createProduct(
+            @RequestParam String name,
+            @RequestParam String description,
+            @RequestParam Double price,
+            @RequestParam Integer stockQuantity,
+            @RequestPart("file") MultipartFile file
+    ) throws IOException {
+        return ResponseEntity.ok(productService.createProduct(name, description, price, stockQuantity, file));
     }
 
-    // Cập nhật sản phẩm
-    @PutMapping("/{id}")
-    public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody ProductRequest productRequest) {
-        Product product = productService.updateProduct(id, productRequest);
-        return ResponseEntity.ok(product);
+    @Operation(summary = "Cập nhật sản phẩm", description = "Cập nhật thông tin sản phẩm và có thể thay ảnh")
+    @PutMapping(value = "/{id}", consumes = {"multipart/form-data"})
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Product> updateProduct(
+            @PathVariable Long id,
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String description,
+            @RequestParam(required = false) Double price,
+            @RequestParam(required = false) Integer stockQuantity,
+            @RequestPart(value = "file", required = false) MultipartFile file
+    ) throws IOException {
+        return ResponseEntity.ok(productService.updateProduct(id, name, description, price, stockQuantity, file));
     }
 
     // Xóa sản phẩm
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity deleteProduct(@PathVariable Long id) {
         boolean result = productService.deleteProduct(id);
         String resultString;

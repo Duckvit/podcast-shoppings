@@ -1,0 +1,3 @@
+FE nen goi theo luong: api addItem (api Post) trong CartItem( api nay se tu tao cart neu chua co cart) -> api cart (api get) de xem cac item dc them
+vao gio hang,
+=> noi chung la api cart la de xem va checkout thanh order, api addItem de them item vao cart.

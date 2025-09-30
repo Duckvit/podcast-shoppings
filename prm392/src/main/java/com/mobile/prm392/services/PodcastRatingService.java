@@ -3,10 +3,13 @@ package com.mobile.prm392.services;
 import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.PodcastRating;
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.podcastRating.PodcastRatingPageResponse;
 import com.mobile.prm392.repositories.IPodcastRatingRepository;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.DoubleSummaryStatistics;
@@ -42,8 +45,15 @@ public class PodcastRatingService {
     }
 
     // 2. Lấy danh sách rating theo podcast
-    public List<PodcastRating> getByPodcast(Long podcastId) {
-        return podcastRatingRepository.findByPodcastIdAndIsActiveTrue(podcastId);
+    public PodcastRatingPageResponse getByPodcast(Long podcastId, int page, int size) {
+        Page podcastRating = podcastRatingRepository.findByPodcastIdAndIsActiveTrue(podcastId, PageRequest.of(page - 1, size));
+
+        PodcastRatingPageResponse response = new PodcastRatingPageResponse();
+        response.setContent(podcastRating.getContent());
+        response.setTotalPages(podcastRating.getTotalPages());
+        response.setPageNumber(podcastRating.getNumber());
+        response.setTotalElements(podcastRating.getTotalElements());
+        return response;
     }
 
     // 3. Tính trung bình rating

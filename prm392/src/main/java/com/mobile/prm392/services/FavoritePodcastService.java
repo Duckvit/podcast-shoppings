@@ -2,11 +2,14 @@ package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.FavoritePodcast;
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.favoritePodcast.FavoritePodcastPageResonse;
 import com.mobile.prm392.model.favoritePodcast.FavoritePodcastResponse;
 import com.mobile.prm392.repositories.IFavoritePodcastRepository;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,18 +26,16 @@ public class FavoritePodcastService {
     private IPodcastRepository podcastRepository;
 
     // 1. Lấy danh sách favorite của user
-    public List<FavoritePodcastResponse> getFavoritesOfCurrentUser() {
+    public FavoritePodcastPageResonse getFavoritesOfCurrentUser(int page, int size) {
         Long userId = authenticationService.getCurrentUser().getId();
-        return favoritePodcastRepository.findByUserIdAndIsActiveTrue(userId)
-                .stream()
-                .map(fav -> {
-                    FavoritePodcastResponse res = new FavoritePodcastResponse();
-                    res.setId(fav.getId());
-                    res.setPodcastId(fav.getPodcast().getId());
-                    res.setPodcastTitle(fav.getPodcast().getTitle());
-                    return res;
-                })
-                .toList();
+        Page favorite = favoritePodcastRepository.findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
+
+        FavoritePodcastPageResonse response = new FavoritePodcastPageResonse();
+        response.setContent(favorite.getContent());
+        response.setPageNumber(favorite.getNumber());
+        response.setTotalElements(favorite.getTotalElements());
+        response.setTotalPages(favorite.getTotalPages());
+        return response;
     }
 
     // 2. Thêm hoặc đánh dấu favorite

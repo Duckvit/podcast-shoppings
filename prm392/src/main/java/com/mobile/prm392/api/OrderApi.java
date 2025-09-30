@@ -9,6 +9,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,13 +25,15 @@ public class OrderApi {
 
     // Lấy tất cả orders
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrders() {
-        return ResponseEntity.ok(orderService.getAllOrders());
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity getAllOrders(@RequestParam int page, @RequestParam int size) {
+        return ResponseEntity.ok(orderService.getAllOrders(page, size));
     }
 
     // Lấy order theo id
     @GetMapping("/{id}")
-    public ResponseEntity<Order> getOrderById(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity getOrderById(@PathVariable Long id) {
         try {
             return ResponseEntity.ok(orderService.getOrderById(id));
         } catch (EntityNotFoundException ex) {
@@ -40,13 +43,15 @@ public class OrderApi {
 
     // Tạo order mới
     @PostMapping
-    public ResponseEntity<Order> createOrder(@RequestBody OrderRequest orderRequest) {
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
         Order order = orderService.createOrder(orderRequest);
         return ResponseEntity.ok(order);
     }
 
     // Cập nhật order
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody OrderUpdateRequest order) {
         try {
             return ResponseEntity.ok(orderService.updateOrder(id, order));
@@ -57,6 +62,7 @@ public class OrderApi {
 
     // Xóa order
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
         try {
             orderService.deleteOrder(id);

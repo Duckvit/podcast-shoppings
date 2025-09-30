@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -50,9 +51,11 @@ public class User implements UserDetails {
 
     // Quan hệ
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Cart> carts;
 
     // User có thể tạo nhiều podcast
@@ -70,6 +73,15 @@ public class User implements UserDetails {
     @JsonIgnore
     private List<PodcastRating> podcastRatings;
 
+    @OneToMany(mappedBy = "from")
+    @JsonIgnore
+    private List<Transaction> transactionsFrom; // User có thể tham gia nhiều Transaction
+
+    @OneToMany(mappedBy = "to")
+    @JsonIgnore
+    private List<Transaction> transactionsTo; // User có thể tham gia nhiều Transaction
+
+
 
     private boolean isActive = true;
 
@@ -77,7 +89,11 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(this.role));
+
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + this.role.toUpperCase()));
+        return authorities;
+
     }
 
     public void setUsername(String username) {
