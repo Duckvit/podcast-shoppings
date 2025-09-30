@@ -5,6 +5,7 @@ import com.mobile.prm392.entities.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -13,6 +14,14 @@ public class Podcast {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToMany // Một podcast có thể có nhiều category và ngược lại
+    @JoinTable(
+            name = "podcast_category",
+            joinColumns = @JoinColumn(name = "podcast_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id")
+    )
+    private List<Category> categories;
 
     private String title;
     private String description;

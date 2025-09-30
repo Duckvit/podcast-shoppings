@@ -9,7 +9,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface IUserRepository extends JpaRepository<User, Long> {
@@ -18,6 +17,10 @@ public interface IUserRepository extends JpaRepository<User, Long> {
 
     // Tìm user theo email
     Optional<User> findByEmail(String email);
+
+    Optional<User> findByOtpCodeAndEmail(String otp, String email);
+
+    Optional<User> findByEmailAndIsActive(String email, boolean isActive);
 
     // Kiểm tra username đã tồn tại chưa
     boolean existsByUsername(String username);
