@@ -7,6 +7,7 @@ import com.mobile.prm392.model.authentication.RegisterRequest;
 import com.mobile.prm392.model.authentication.RegisterResponse;
 import com.mobile.prm392.model.response.Response;
 import com.mobile.prm392.services.AuthenticationService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,12 +36,14 @@ public class AuthenticationApi {
         return ResponseEntity.ok(newAccount);
     }
 
+    @Operation(summary = "Check xem email có tồn tại không")
     @PostMapping("/email-existed")
     public ResponseEntity<Response> isEmailExisted(@RequestBody Response responseEmail) {
         Response response = authenticationService.findByGmailChangePassword(responseEmail);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
 
+    @Operation(summary = "Kiểm tra otp", description = "Check xem OTP có đúng so với cái đã gửi bằng gmail không")
     @PostMapping("/otp-existed")
     public ResponseEntity<Response> isCorrectOTP(@RequestBody Response responseEmail) {
         Response response = authenticationService.findByOTPChangePassword(responseEmail);

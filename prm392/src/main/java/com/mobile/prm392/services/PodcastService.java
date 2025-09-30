@@ -136,5 +136,10 @@ public class PodcastService {
         podcast.setActive(true);
         return podcastRepository.save(podcast);
     }
+
+    // 8. Tìm podcast qua tên category
+    public List<Podcast> getPodcastsByCategoryName(String categoryName) {
+        return podcastRepository.findByCategoryName(categoryName);
+    }
 }
 
