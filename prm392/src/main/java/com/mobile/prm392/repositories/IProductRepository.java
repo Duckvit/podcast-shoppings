@@ -15,4 +15,6 @@ public interface IProductRepository extends JpaRepository<Product, Long> {
     Optional<Product> findByName(String name);
 
     Page findAll(Pageable pageable);
+
+    Page<Product> findByIsActiveTrue(Pageable pageable);
 }

@@ -8,5 +8,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IOrderRepository extends JpaRepository<Order, Long> {
-    Page findAll(Pageable pageable);
+    Page findByIsActiveTrue(Pageable pageable);
+    Page<Order> findByUserIdAndIsActiveTrue(Long userId, Pageable pageable);
 }

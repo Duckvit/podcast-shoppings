@@ -11,6 +11,7 @@ import com.mobile.prm392.model.order.OrderUpdateRequest;
 import com.mobile.prm392.model.orderItem.OrderItemRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IProductRepository;
+import com.mobile.prm392.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,11 +42,32 @@ public class OrderService {
     private IProductRepository productRepository;
 
     @Autowired
+    private IUserRepository userRepository;
+
+    @Autowired
     private ModelMapper modelMapper;
 
     // Lấy tất cả order
     public OrderPageResponse getAllOrders(int page, int size) {
-        Page<Order> orderPage = orderRepository.findAll(PageRequest.of(page - 1, size));
+        Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
+
+        List<OrderResponse> content = orderPage.getContent().stream()
+                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .toList();
+
+        OrderPageResponse response = new OrderPageResponse();
+        response.setContent(content);
+        response.setPageNumber(orderPage.getNumber());
+        response.setTotalElements(orderPage.getTotalElements());
+        response.setTotalPages(orderPage.getTotalPages());
+        return response;
+    }
+
+    // Lấy tất cả order theo userId
+    public OrderPageResponse getOrdersByUserId(Long userId, int page, int size) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("user not found: " + userId));
+        Page<Order> orderPage = orderRepository.findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
 
         List<OrderResponse> content = orderPage.getContent().stream()
                 .map(order -> modelMapper.map(order, OrderResponse.class))
@@ -167,7 +189,8 @@ public class OrderService {
 
 
     // Xóa order (soft delete + hoàn lại số lượng product)
-    public void deleteOrder(Long id) {
+    public boolean deleteOrder(Long id) {
+        boolean result;
         Order existingOrder = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
 
@@ -180,9 +203,11 @@ public class OrderService {
 
         // Soft delete
         existingOrder.setActive(false);
+        result = true;
         existingOrder.setUpdatedAt(LocalDateTime.now());
 
         orderRepository.save(existingOrder);
+        return result;
     }
 
 

@@ -33,6 +33,14 @@ public class ProductApi {
         return ResponseEntity.ok(productService.getAllProducts(page, size));
     }
 
+    // lay theo isActive true
+    @GetMapping("/active")
+    public ResponseEntity getActiveProducts(
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(productService.getAllActiveProducts(page, size));
+    }
+
     // Lấy sản phẩm theo id
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
