@@ -49,4 +49,10 @@ public class AuthenticationApi {
         Response response = authenticationService.findByOTPChangePassword(responseEmail);
         return ResponseEntity.status(response.getStatusCode()).body(response);
     }
+    @Operation(summary = "Forgot password", description = "Để thay đổi password khi quên password")
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Response> changePassword(@RequestBody Response changeRequest){
+        Response response = authenticationService.changePassword(changeRequest);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }

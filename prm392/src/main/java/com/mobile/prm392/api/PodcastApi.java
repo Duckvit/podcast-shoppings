@@ -38,9 +38,10 @@ public class PodcastApi {
             @RequestParam String title,
             @RequestParam(required = false) String description,
             @RequestPart("file") MultipartFile file,
+            @RequestParam List<Long> categoryIds,
             @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
 
-        Podcast podcast = podcastService.uploadPodcast(title, description, file, imageFile);
+        Podcast podcast = podcastService.uploadPodcast(title, description, file, imageFile, categoryIds);
         return ResponseEntity.ok(podcast);
     }
 

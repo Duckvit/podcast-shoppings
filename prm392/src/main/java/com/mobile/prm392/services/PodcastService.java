@@ -1,9 +1,11 @@
 package com.mobile.prm392.services;
 
+import com.mobile.prm392.entities.Category;
 import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.midleware.Duplicate;
 import com.mobile.prm392.model.podcast.PodcastPageResponse;
+import com.mobile.prm392.repositories.ICategoryRepository;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import com.mobile.prm392.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,12 +26,15 @@ public class PodcastService {
     private IPodcastRepository podcastRepository;
 
     @Autowired
+    private ICategoryRepository categoryRepository;
+
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     @Autowired
     private AuthenticationService authenticationService;
 
-    public Podcast uploadPodcast(String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
+    public Podcast uploadPodcast(String title, String description, MultipartFile file, MultipartFile file1, List<Long> categoryIds) throws IOException {
         User user = authenticationService.getCurrentUser();
 
         // Upload file audio lên Cloudinary
@@ -38,10 +43,13 @@ public class PodcastService {
         // Upload file anh lên Cloudinary
         String imgUrl = cloudinaryService.uploadImage(file1);
 
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+
         // Lưu metadata xuống DB
         Podcast podcast = new Podcast();
         podcast.setTitle(title);
         podcast.setDescription(description);
+        podcast.setCategories(categories);
         podcast.setAudioUrl(audioUrl);
         podcast.setImageUrl(imgUrl);
         podcast.setUser(user);
