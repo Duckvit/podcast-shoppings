@@ -1,5 +1,6 @@
 package com.mobile.prm392.repositories;
 
+import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.entities.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface IPaymentRepository extends JpaRepository<Payment, Long> {
 //    boolean existsByTransactionId(String transactionId);
     Page findAll(Pageable pageable);
+    boolean existsByOrder(Order order);
 }

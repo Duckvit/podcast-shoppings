@@ -75,7 +75,8 @@ public class PaymentService {
         existingPayment.setMethod(payment.getMethod());
         existingPayment.setStatus(payment.getStatus());
         existingPayment.setAmount(payment.getAmount());
-//        existingPayment.setTransactionId(payment.getTransactionId());
+        existingPayment.setTransactionId(payment.getTransactionId());
+        existingPayment.setCheckoutUrl(payment.getCheckoutUrl());
         existingPayment.setUpdatedAt(payment.getUpdatedAt());
 
         return paymentRepository.save(existingPayment);

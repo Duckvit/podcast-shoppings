@@ -7,9 +7,10 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 public class CreatePaymentLinkRequestBody {
+    private Long orderId;
     private String name;
     private String description;
     private String returnUrl;
-    private int price;
+    private long price;
     private String cancelUrl;
 }
