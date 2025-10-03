@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -73,9 +72,10 @@ public class PodcastApi {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String description,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "category", required = false) List<Long> categoryIds
     ) throws IOException {
-        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file, imageFile));
+        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file, imageFile, categoryIds));
     }
 
 

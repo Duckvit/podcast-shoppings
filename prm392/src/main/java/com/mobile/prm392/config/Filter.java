@@ -40,7 +40,8 @@ public class Filter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/gemini/chat",
             "/api/auth/email-existed",
-            "/api/auth/forgot-password"
+            "/api/auth/forgot-password",
+            "/payos/create"
     );
 
     public boolean checkIsPublicAPI(String uri){

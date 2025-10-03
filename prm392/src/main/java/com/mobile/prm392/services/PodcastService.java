@@ -89,7 +89,7 @@ public class PodcastService {
     }
 
     // 5. Update Podcast
-    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
+    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1, List<Long> categoryIds) throws IOException {
         User user = authenticationService.getCurrentUser();
         Podcast podcast = podcastRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
@@ -111,6 +111,11 @@ public class PodcastService {
         if (file1 != null && !file1.isEmpty()) {
             String imgUrl = cloudinaryService.uploadImage(file1);
             podcast.setImageUrl(imgUrl);
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            List<Category> categories = categoryRepository.findAllById(categoryIds);
+            podcast.setCategories(categories);
         }
 
         podcast.setUpdatedAt(java.time.LocalDateTime.now());
