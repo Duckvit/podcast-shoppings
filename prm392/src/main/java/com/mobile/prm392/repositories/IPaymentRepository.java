@@ -7,9 +7,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface IPaymentRepository extends JpaRepository<Payment, Long> {
-//    boolean existsByTransactionId(String transactionId);
+    boolean existsByTransactionId(String transactionId);
     Page findAll(Pageable pageable);
     boolean existsByOrder(Order order);
+    Optional<Payment> findByTransactionId(String transactionId);
 }
