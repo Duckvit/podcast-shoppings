@@ -38,8 +38,9 @@ public class Filter extends OncePerRequestFilter {
             "/swagger-resources/**",
             "/api/auth/register",
             "/api/auth/login",
-            "/api/gemini/chat"
-
+            "/api/gemini/chat",
+            "/api/auth/email-existed",
+            "/api/auth/forgot-password"
     );
 
     public boolean checkIsPublicAPI(String uri){

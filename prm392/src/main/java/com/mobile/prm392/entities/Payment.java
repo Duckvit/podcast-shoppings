@@ -21,15 +21,19 @@ public class Payment {
     private Order order;
 
     @Column(nullable = false, length = 50)
-    private String method; // VNPay, MoMo, Paypal, Stripe...
+    private String method; // VNPay, MoMo, Paypal, Stripe, PayOS...
 
     @Column(nullable = false, length = 20)
-    private String status; // pending, success, failed, refunded
+    private String status = "pending"; // pending, success, failed, cancel
 
     private Double amount;
 
-//    @Column(name = "transaction_id", length = 100)
-//    private String transactionId; // mã giao dịch trả về từ cổng thanh toán
+    @Column(name = "transaction_id", length = 100, unique = true)
+    private String transactionId; // mã giao dịch trả về từ cổng thanh toán
+
+    // Link checkout từ PayOS (redirect cho user)
+    @Column(name = "checkout_url", columnDefinition = "TEXT")
+    private String checkoutUrl;
 
 
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -7,12 +7,16 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class AIConfig {
+
+    @Value("${google.api.key}")
+    private String googleApiKey;
+
     @Bean
     public Client AIClient() {
         String key = System.getenv("GOOGLE_API_KEY");
         System.out.println("GOOGLE_API_KEY = " + key); // kiểm tra giá trị
         return Client.builder()
-                .apiKey(System.getenv("GOOGLE_API_KEY"))
+                .apiKey(googleApiKey)
                 .build();
     }
 //@Value("${spring.ai.gemini.api-key}")
