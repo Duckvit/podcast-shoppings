@@ -37,6 +37,19 @@ public class ProductService {
         return response;
     }
 
+    // Lấy tất cả sản phẩm có isActive = true
+    public ProductPageResponse getAllActiveProducts(int page, int size) {
+        Page<Product> productPage = productRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
+
+        ProductPageResponse response = new ProductPageResponse();
+        response.setTotalPages(productPage.getTotalPages());
+        response.setContent(productPage.getContent());
+        response.setPageNumber(productPage.getNumber());
+        response.setTotalElements(productPage.getTotalElements());
+        return response;
+    }
+
+
     // Lấy sản phẩm theo id
     public Product getProductById(Long id) {
         return productRepository.findById(id)
@@ -99,7 +112,7 @@ public class ProductService {
         }
         product.setActive(false);
         result = true;
-        productRepository.deleteById(id);
+        productRepository.save(product);
         return result;
     }
 }

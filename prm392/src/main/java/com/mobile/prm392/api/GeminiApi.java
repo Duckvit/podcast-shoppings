@@ -18,7 +18,6 @@ public class GeminiApi {
     }
 
     @PostMapping("/chat")
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public GeminiResponse chat(@RequestParam String prompt) {
         return geminiService.askGemini(prompt);
     }

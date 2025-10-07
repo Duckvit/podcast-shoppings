@@ -4,11 +4,13 @@ import com.mobile.prm392.entities.*;
 import com.mobile.prm392.model.cart.CartResponse;
 import com.mobile.prm392.repositories.ICartRepository;
 import com.mobile.prm392.repositories.IOrderRepository;
+import com.mobile.prm392.repositories.IProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -25,6 +27,9 @@ public class CartService {
 
     @Autowired
     private IOrderRepository orderRepository;
+
+    @Autowired
+    private IProductRepository productRepository;
 
     @Autowired
     private ModelMapper modelMapper;
@@ -66,7 +71,6 @@ public class CartService {
     }
 
     // Checkout: từ cart tạo Order
-
     public Order checkoutCart() {
         Cart cart = getOrCreateCart();
         if (cart.getItems().isEmpty()) {
@@ -79,10 +83,31 @@ public class CartService {
         order.setUpdatedAt(LocalDateTime.now());
         order.setStatus("Pending");
 
-        List<OrderItem> orderItems = cartItemService.convertToOrderItems(cart, order);
-        double totalAmount = orderItems.stream()
-                .mapToDouble(oi -> oi.getPrice() * oi.getQuantity())
-                .sum();
+        List<OrderItem> orderItems = new ArrayList<>();
+        double totalAmount = 0.0;
+
+        for (CartItem cartItem : cart.getItems()) {
+            Product product = cartItem.getProduct();
+
+            // Kiểm tra tồn kho
+            if (product.getStockQuantity() < cartItem.getQuantity()) {
+                throw new IllegalArgumentException("Không đủ tồn kho cho sản phẩm: " + product.getName());
+            }
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.setOrder(order);
+            orderItem.setProduct(product);
+            orderItem.setQuantity(cartItem.getQuantity());
+            orderItem.setPrice(product.getPrice());
+
+            orderItems.add(orderItem);
+
+            totalAmount += orderItem.getPrice() * orderItem.getQuantity();
+
+            // Trừ tồn kho
+            product.setStockQuantity(product.getStockQuantity() - cartItem.getQuantity());
+            productRepository.save(product);
+        }
 
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
@@ -93,6 +118,7 @@ public class CartService {
 
         return orderRepository.save(order);
     }
+
 }
 
 
