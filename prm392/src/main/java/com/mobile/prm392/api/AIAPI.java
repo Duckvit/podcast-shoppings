@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.services.AIService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/ai")
 @RequiredArgsConstructor
+@CrossOrigin("*") // cho phep tat ca truy cap, ket noi FE va BE vs nhau
+@SecurityRequirement(name = "api") // tao controller moi nho copy qua
 public class AIAPI {
 
     private final AIService aiService;

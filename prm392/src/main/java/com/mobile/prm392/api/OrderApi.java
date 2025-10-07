@@ -30,6 +30,15 @@ public class OrderApi {
         return ResponseEntity.ok(orderService.getAllOrders(page, size));
     }
 
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity getOrdersByUserId(
+            @PathVariable Long userId,
+            @RequestParam int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(orderService.getOrdersByUserId(userId, page, size));
+    }
+
     // Lấy order theo id
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
@@ -44,7 +53,7 @@ public class OrderApi {
     // Tạo order mới
     @PostMapping
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) throws Exception {
+    public ResponseEntity createOrder(@RequestBody OrderRequest orderRequest) {
         Order order = orderService.createOrder(orderRequest);
         return ResponseEntity.ok(order);
     }
@@ -63,12 +72,19 @@ public class OrderApi {
     // Xóa order
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) {
-        try {
-            orderService.deleteOrder(id);
-            return ResponseEntity.noContent().build();
-        } catch (EntityNotFoundException ex) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity deleteOrder(@PathVariable Long id) {
+//        try {
+//            orderService.deleteOrder(id);
+//            return ResponseEntity.noContent().build();
+//        } catch (EntityNotFoundException ex) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+//        }
+        boolean result = orderService.deleteOrder(id);
+        String resultString;
+        if(result){
+            resultString = "Delete successfully";
         }
+        return ResponseEntity.ok(result);
     }
+
 }

@@ -13,8 +13,19 @@ public class AIConfig {
 
     @Bean
     public Client AIClient() {
+        String key = System.getenv("GOOGLE_API_KEY");
+        System.out.println("GOOGLE_API_KEY = " + key); // kiểm tra giá trị
         return Client.builder()
                 .apiKey(googleApiKey)
                 .build();
     }
+//@Value("${spring.ai.gemini.api-key}")
+//private String apiKey;
+//
+//    @Bean
+//    public Client AIClient() {
+//        return Client.builder()
+//                .apiKey(apiKey)  // lấy từ application.properties
+//                .build();
+//    }
 }
