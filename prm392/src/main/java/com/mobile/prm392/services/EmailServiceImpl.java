@@ -60,14 +60,46 @@ public class EmailServiceImpl {
             helper.setSubject(emailRequest.getSubject());
 
             // Nội dung HTML của email
-            String htmlContent = "<div style='text-align: center; font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; border-radius: 5px;'>" +
-                    "<h1 style='color: #FFBF00;'>Thông báo mới</h1>" +
-                    "<p style='font-size: 16px; color: #333;'>" + emailRequest.getMsgBody() + "</p>" +
-//                    "<p style='font-size: 14px; color: #888;'>Healing</p>" +
-                    "<footer style='margin-top: 30px; font-size: 12px; color: #aaa;'>" +
-                    "<p>&copy; " + 2025 + " Healing Podcast System </p>" +
-                    "</footer>" +
-                    "</div>";
+            String htmlContent =
+                    "<!DOCTYPE html>" +
+                            "<html lang='vi'>" +
+                            "<head>" +
+                            "    <meta charset='UTF-8'>" +
+                            "    <meta name='viewport' content='width=device-width, initial-scale=1.0'>" +
+                            "    <title>Thông báo từ Healing Podcast</title>" +
+                            "</head>" +
+                            "<body style='margin: 0; padding: 20px; background-color: #f5ebe0; font-family: Segoe UI, Tahoma, Helvetica Neue, Arial, sans-serif;'>" +
+
+                            "    <div style='max-width: 650px; margin: 0 auto; background-color: #fffcf7; box-shadow: 0 4px 12px rgba(139, 90, 43, 0.15); border-radius: 8px; overflow: hidden; border: 1px solid #e8d5c4;'>" +
+
+                            "        <div style='background: linear-gradient(135deg, #d4a574 0%, #c9956e 100%); padding: 30px 40px; position: relative; border-bottom: 3px solid #b8865f;'>" +
+                            "            <div style='position: absolute; top: 10px; right: 20px; width: 60px; height: 60px; background-color: rgba(255,255,255,0.25); border-radius: 50%; border: 3px dashed #fff;'></div>" +
+                            "            <h1 style='margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; text-shadow: 2px 2px 4px rgba(0,0,0,0.15); letter-spacing: 0.5px;'>🎧 Healing Podcast System</h1>" +
+                            "            <p style='margin: 8px 0 0 0; color: #fff; font-size: 14px; opacity: 0.95; font-weight: 400;'>Thông báo quan trọng</p>" +
+                            "        </div>" +
+
+                            "        <div style='padding: 40px 45px; background-color: #fffcf7;'>" +
+                            "            <p style='margin: 0 0 20px 0; font-size: 16px; color: #5a4a3a; line-height: 1.7; font-weight: 500;'>Kính gửi Quý khách,</p>" +
+
+                            "            <div style='margin: 25px 0; padding: 22px; background-color: #fff9f0; border-left: 4px solid #c9956e; border-radius: 4px; box-shadow: 0 2px 4px rgba(139, 90, 43, 0.08);'>" +
+                            "                <p style='margin: 0; font-size: 16px; color: #5a4a3a; line-height: 1.8; font-weight: 400;'>" +
+                            emailRequest.getMsgBody() +
+                            "                </p>" +
+                            "            </div>" +
+
+                            "            <p style='margin: 25px 0 10px 0; font-size: 16px; color: #5a4a3a; line-height: 1.7; font-weight: 400;'>Trân trọng,</p>" +
+                            "            <p style='margin: 0; font-size: 16px; color: #b8865f; font-weight: 600;'>Đội ngũ Healing Podcast System</p>" +
+                            "        </div>" +
+
+                            "        <div style='background-color: #4a3f35; padding: 25px 40px; text-align: center; border-top: 3px solid #c9956e;'>" +
+                            "            <p style='margin: 0 0 8px 0; font-size: 14px; color: #f5ebe0; font-weight: 600;'>Healing Podcast System</p>" +
+                            "            <p style='margin: 0; font-size: 11px; color: #a89888;'>&copy; 2025 Healing Podcast System. All rights reserved.</p>" +
+                            "        </div>" +
+
+                            "    </div>" +
+
+                            "</body>" +
+                            "</html>";
 
             helper.setText(htmlContent.replace("\n", "<br>"), true); // true để gửi dưới dạng HTML
 

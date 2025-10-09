@@ -43,7 +43,7 @@ public class Filter extends OncePerRequestFilter {
             "/api/auth/forgot-password"
     );
 
-    public boolean checkIsPublicAPI(String uri){
+    public boolean checkIsPublicAPI(String uri) {
         //uri : /api/register
         //nếu gặp những api trong list trên => cho phép truy cập lun => true
         AntPathMatcher patchMatch = new AntPathMatcher();
@@ -55,13 +55,13 @@ public class Filter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         //filterChain.doFilter(request, response);
-        boolean isPublicAPI =checkIsPublicAPI(request.getRequestURI());
+        boolean isPublicAPI = checkIsPublicAPI(request.getRequestURI());
 
-        if (isPublicAPI){
+        if (isPublicAPI) {
             filterChain.doFilter(request, response);
         } else {
             String token = getToken(request);
-            if (token == null){
+            if (token == null) {
                 //ko đc phép truy cập
                 resolver.resolveException(request, response, null, new AuthException("Empty token!"));
                 return;
@@ -70,14 +70,14 @@ public class Filter extends OncePerRequestFilter {
             //check xem token có đúng hay ko => lấy thông tin account từ token
             User user;
 
-            try{
+            try {
                 user = tokenService.getUserByToken(token);
 
-            } catch (ExpiredJwtException e){
+            } catch (ExpiredJwtException e) {
                 //response token hết hạn
                 resolver.resolveException(request, response, null, new AuthException("Expired token!"));
                 return;
-            } catch (MalformedJwtException malformedJwtException){
+            } catch (MalformedJwtException malformedJwtException) {
                 //response token sai
                 resolver.resolveException(request, response, null, new AuthException("Invalid token!"));
                 return;
@@ -86,7 +86,7 @@ public class Filter extends OncePerRequestFilter {
             //=> token chuẩn
             //=> cho phép truy cập
             //lưu lại thông tin account
-            if(user != null){
+            if (user != null) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         user,
                         token,
@@ -103,9 +103,9 @@ public class Filter extends OncePerRequestFilter {
         }
     }
 
-    public String getToken(HttpServletRequest request){
+    public String getToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
-        if (authHeader==null) return null;
+        if (authHeader == null) return null;
         return authHeader.substring(7);
     }
 }
