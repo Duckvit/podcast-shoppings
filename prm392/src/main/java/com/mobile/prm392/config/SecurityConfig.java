@@ -76,7 +76,6 @@ public class SecurityConfig {
                                 .requestMatchers("/swagger-ui.html").permitAll()
                                 .requestMatchers("/swagger-resources/**").permitAll()
                                 .requestMatchers("/webjars/**").permitAll()
-                                .requestMatchers("/payos/webhook").permitAll()
                                 .anyRequest().authenticated()
                 )
                 .userDetailsService(authenticationService)

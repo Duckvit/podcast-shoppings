@@ -151,41 +151,6 @@ public class PayOSAPI {
      * Example usage in PayOS API:
      * webhookUrl: "https://podcast-shoppings-1.onrender.com/api/payos/webhook"
      */
-//    @PostMapping("/webhook")
-//    public ResponseEntity<String> handleWebhook(@RequestBody WebhookRequest payload) {
-//        System.out.println("📩 Webhook received: " + payload);
-//
-//        try {
-//            String orderCode = payload.getData().getOrderCode();
-//            String status = payload.getData().getStatus();
-//
-//            Payment payment = paymentRepository.findByTransactionId(orderCode)
-//                    .orElseThrow(() -> new RuntimeException("Payment not found with transactionId: " + orderCode));
-//
-//            if ("success".equalsIgnoreCase(payment.getStatus())) {
-//                return ResponseEntity.ok("Payment already processed");
-//            }
-//
-//            if ("PAID".equalsIgnoreCase(status)) {
-//                payment.setStatus("success");
-//            } else if ("CANCELLED".equalsIgnoreCase(status)) {
-//                payment.setStatus("cancel");
-//            } else {
-//                payment.setStatus("failed");
-//            }
-//
-//            payment.setUpdatedAt(LocalDateTime.now());
-//            paymentRepository.save(payment);
-//
-//            System.out.println("✅ Payment updated via webhook: " + payment.getStatus());
-//            return ResponseEntity.ok("Webhook processed successfully");
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body("Error processing webhook: " + e.getMessage());
-//        }
-//    }
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(@org.springframework.web.bind.annotation.RequestBody String rawJson) {
         try {

@@ -40,7 +40,6 @@ public class Filter extends OncePerRequestFilter {
             "/api/auth/login",
             "/api/gemini/chat",
             "/api/auth/email-existed",
-            "/payos/webhook",
             "/api/auth/forgot-password"
     );
 
