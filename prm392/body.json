@@ -1,0 +1,24 @@
+{
+  "code": "00",
+  "desc": "Webhook success",
+  "success": true,
+  "signature": "mock-signature",
+  "data": {
+    "orderCode": 123456,
+    "amount": 20000,
+    "description": "Payment completed",
+    "accountNumber": "123456789",
+    "reference": "REF123",
+    "transactionDateTime": "2025-10-07T10:00:00+07:00",
+    "currency": "VND",
+    "paymentLinkId": "plink_001",
+    "code": "00",
+    "desc": "Payment success",
+    "counterAccountBankId": "VCB",
+    "counterAccountBankName": "Vietcombank",
+    "counterAccountName": "Nguyen Van A",
+    "counterAccountNumber": "987654321",
+    "virtualAccountName": "PayOS Demo",
+    "virtualAccountNumber": "100200300"
+  }
+}

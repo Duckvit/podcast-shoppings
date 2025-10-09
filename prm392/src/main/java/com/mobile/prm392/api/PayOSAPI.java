@@ -1,5 +1,6 @@
 package com.mobile.prm392.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.entities.Payment;
 import com.mobile.prm392.exception.OurException;
@@ -10,6 +11,7 @@ import com.mobile.prm392.model.payos.WebhookRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IPaymentRepository;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -20,7 +22,10 @@ import vn.payos.PayOS;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
 import vn.payos.model.v2.paymentRequests.PaymentLinkItem;
+import vn.payos.model.webhooks.Webhook;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +37,9 @@ public class PayOSAPI {
     private final PayOS payOS;
     private final IPaymentRepository paymentRepository;
     private final IOrderRepository orderRepository;
+
+    @Autowired
+    private ObjectMapper mapper;
 
     public PayOSAPI(PayOS payOS, IPaymentRepository paymentRepository, IOrderRepository orderRepository) {
         this.payOS = payOS;
@@ -134,39 +142,102 @@ public class PayOSAPI {
         }
     }
 
+    /**
+     * Webhook endpoint for PayOS to notify payment status updates.
+     * <p>
+     * To use this endpoint as your webhookUrl in PayOS, set:
+     * https://podcast-shoppings-1.onrender.com/api/payos/webhook
+     * <p>
+     * Example usage in PayOS API:
+     * webhookUrl: "https://podcast-shoppings-1.onrender.com/api/payos/webhook"
+     */
+//    @PostMapping("/webhook")
+//    public ResponseEntity<String> handleWebhook(@RequestBody WebhookRequest payload) {
+//        System.out.println("📩 Webhook received: " + payload);
+//
+//        try {
+//            String orderCode = payload.getData().getOrderCode();
+//            String status = payload.getData().getStatus();
+//
+//            Payment payment = paymentRepository.findByTransactionId(orderCode)
+//                    .orElseThrow(() -> new RuntimeException("Payment not found with transactionId: " + orderCode));
+//
+//            if ("success".equalsIgnoreCase(payment.getStatus())) {
+//                return ResponseEntity.ok("Payment already processed");
+//            }
+//
+//            if ("PAID".equalsIgnoreCase(status)) {
+//                payment.setStatus("success");
+//            } else if ("CANCELLED".equalsIgnoreCase(status)) {
+//                payment.setStatus("cancel");
+//            } else {
+//                payment.setStatus("failed");
+//            }
+//
+//            payment.setUpdatedAt(LocalDateTime.now());
+//            paymentRepository.save(payment);
+//
+//            System.out.println("✅ Payment updated via webhook: " + payment.getStatus());
+//            return ResponseEntity.ok("Webhook processed successfully");
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body("Error processing webhook: " + e.getMessage());
+//        }
+//    }
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleWebhook(@RequestBody WebhookRequest payload) {
-        System.out.println("📩 Webhook received: " + payload);
-
+    public ResponseEntity<String> handleWebhook(@org.springframework.web.bind.annotation.RequestBody String rawJson) {
         try {
-            String orderCode = payload.getOrderCode();
-            String status = payload.getStatus();
+            System.out.println("📩 RAW JSON RECEIVED: " + rawJson);
 
-            Payment payment = paymentRepository.findByTransactionId(orderCode)
-                    .orElseThrow(() -> new RuntimeException("Payment not found with transactionId: " + orderCode));
-
-            if ("success".equalsIgnoreCase(payment.getStatus())) {
-                return ResponseEntity.ok("Payment already processed");
+            // Parse payload
+            WebhookRequest payload = mapper.readValue(rawJson, WebhookRequest.class);
+            if (payload == null || payload.getData() == null || payload.getData().getOrderCode() == null) {
+                return ResponseEntity.ok("fail");
             }
 
-            if ("PAID".equalsIgnoreCase(status)) {
+            String orderCodeStr = String.valueOf(payload.getData().getOrderCode());
+
+            Payment payment = paymentRepository.findByTransactionId(orderCodeStr)
+                    .orElse(null);
+
+            if (payment == null) {
+                // Unknown transactionId
+                return ResponseEntity.ok("fail");
+            }
+
+            // If already success, idempotent success response
+            if ("success".equalsIgnoreCase(payment.getStatus())) {
+                return ResponseEntity.ok("success");
+            }
+
+            boolean isSuccess = payload.isSuccess();
+
+            if (isSuccess) {
                 payment.setStatus("success");
-            } else if ("CANCELLED".equalsIgnoreCase(status)) {
-                payment.setStatus("cancel");
+                payment.setUpdatedAt(LocalDateTime.now());
+                paymentRepository.save(payment);
+
+                // Also mark order as paid
+                Order order = payment.getOrder();
+                if (order != null) {
+                    order.setStatus("paid");
+                    order.setUpdatedAt(LocalDateTime.now());
+                    orderRepository.save(order);
+                }
+
+                return ResponseEntity.ok("success");
             } else {
                 payment.setStatus("failed");
+                payment.setUpdatedAt(LocalDateTime.now());
+                paymentRepository.save(payment);
+                return ResponseEntity.ok("fail");
             }
-
-            payment.setUpdatedAt(LocalDateTime.now());
-            paymentRepository.save(payment);
-
-            System.out.println("✅ Payment updated via webhook: " + payment.getStatus());
-            return ResponseEntity.ok("Webhook processed successfully");
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body("Error processing webhook: " + e.getMessage());
+            return ResponseEntity.ok("fail");
         }
     }
 
