@@ -179,7 +179,7 @@ public class PayOSAPI {
             JSONObject data = json.optJSONObject("data");
 
             if (signature == null || data == null) {
-                return ResponseEntity.badRequest().body("❌ Missing signature or data");
+                return ResponseEntity.ok("fail");
             }
 
             // ✅ B1: Tạo chuỗi sắp xếp alphabet key=value
@@ -202,7 +202,7 @@ public class PayOSAPI {
             System.out.println("📬 Received signature: " + signature);
 
             if (!expectedSignature.equals(signature)) {
-                return ResponseEntity.status(400).body("❌ Invalid signature");
+                return ResponseEntity.ok("fail");
             }
 
             // ✅ B3: Xử lý logic đơn hàng và thanh toán
@@ -213,11 +213,10 @@ public class PayOSAPI {
             System.out.println("✅ Verified webhook for order " + orderCode + " with status " + statusCode);
 
             // 🔎 Tìm Payment theo transactionId
-            Payment payment = paymentRepository.findByTransactionId(orderCode)
-                    .orElseThrow(() -> new RuntimeException("Payment not found"));
+            Payment payment = paymentRepository.findByTransactionId(orderCode).orElse(null);
             if (payment == null) {
                 System.out.println("⚠️ No payment found for transactionId " + orderCode);
-                return ResponseEntity.status(404).body("❌ Payment not found");
+                return ResponseEntity.ok("fail");
             }
 
             // ✅ Cập nhật trạng thái payment & order
@@ -235,12 +234,17 @@ public class PayOSAPI {
             System.out.println("💾 Updated payment status: " + payment.getStatus());
             System.out.println("💾 Updated order status: " + payment.getOrder().getStatus());
 
-            return ResponseEntity.ok("✅ Webhook processed successfully");
+            return ResponseEntity.ok("success");
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.internalServerError().body("❌ Exception: " + e.getMessage());
+            return ResponseEntity.ok("fail");
         }
+    }
+
+    @GetMapping("/webhook")
+    public ResponseEntity<String> confirmWebhook() {
+        return ResponseEntity.ok("success");
     }
 
     private static Iterator<String> sortedIterator(Iterator<?> it, Comparator<String> comparator) {
