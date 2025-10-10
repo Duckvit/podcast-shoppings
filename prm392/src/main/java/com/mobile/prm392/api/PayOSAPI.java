@@ -10,17 +10,12 @@ import com.mobile.prm392.model.payos.UpdatePaymentStatusRequest;
 import com.mobile.prm392.model.payos.WebhookRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IPaymentRepository;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,15 +23,11 @@ import vn.payos.PayOS;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
 import vn.payos.model.v2.paymentRequests.PaymentLinkItem;
-import org.apache.commons.codec.digest.HmacUtils;
-import org.json.JSONObject;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import vn.payos.model.webhooks.Webhook;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,9 +42,6 @@ public class PayOSAPI {
     @Autowired
     private ObjectMapper mapper;
 
-    @Value("${payos.checksum-key}")
-    private String checksumKey;
-
     public PayOSAPI(PayOS payOS, IPaymentRepository paymentRepository, IOrderRepository orderRepository) {
         this.payOS = payOS;
         this.paymentRepository = paymentRepository;
@@ -63,11 +51,8 @@ public class PayOSAPI {
     @PostMapping(path = "/create")
     public ApiResponse<CreatePaymentLinkResponse> createPaymentLink(@RequestBody CreatePaymentLinkRequestBody requestBody) {
         try {
-            if (requestBody == null || requestBody.getOrderId() == null) {
-                return ApiResponse.error("orderId is required");
-            }
-            // Lấy order từ DB (fetch items đil + products to avoid lazy init)
-            Order order = orderRepository.findWithItemsAndProductsById(requestBody.getOrderId())
+            // Lấy order từ DB
+            Order order = orderRepository.findById(requestBody.getOrderId())
                     .orElseThrow(() -> new RuntimeException("Order not found"));
 
             // Kiểm tra đã có payment chưa
@@ -170,71 +155,53 @@ public class PayOSAPI {
      * webhookUrl: "https://podcast-shoppings-1.onrender.com/api/payos/webhook"
      */
     @PostMapping("/webhook")
-    public ResponseEntity<String> handleWebhook(@RequestBody String rawBody) {
+    public ResponseEntity<String> handleWebhook(@org.springframework.web.bind.annotation.RequestBody String rawJson) {
         try {
-            System.out.println("📩 RAW JSON RECEIVED: " + rawBody);
+            System.out.println("📩 RAW JSON RECEIVED: " + rawJson);
 
-            JSONObject json = new JSONObject(rawBody);
-            String signature = json.optString("signature", null);
-            JSONObject data = json.optJSONObject("data");
-
-            if (signature == null || data == null) {
+            // Parse payload
+            WebhookRequest payload = mapper.readValue(rawJson, WebhookRequest.class);
+            if (payload == null || payload.getData() == null || payload.getData().getOrderCode() == null) {
                 return ResponseEntity.ok("fail");
             }
 
-            // ✅ B1: Tạo chuỗi sắp xếp alphabet key=value
-            Iterator<String> sortedKeys = sortedIterator(data.keys(), String::compareTo);
-            StringBuilder dataString = new StringBuilder();
-            while (sortedKeys.hasNext()) {
-                String key = sortedKeys.next();
-                Object value = data.get(key);
-                dataString.append(key).append('=').append(value);
-                if (sortedKeys.hasNext()) dataString.append('&');
-            }
+            String orderCodeStr = String.valueOf(payload.getData().getOrderCode());
 
-            System.out.println("🧮 Data string: " + dataString);
+            Payment payment = paymentRepository.findByTransactionId(orderCodeStr)
+                    .orElse(null);
 
-            // ✅ B2: Tạo chữ ký
-            String expectedSignature = new HmacUtils("HmacSHA256", checksumKey)
-                    .hmacHex(dataString.toString());
-
-            System.out.println("🔏 Expected signature: " + expectedSignature);
-            System.out.println("📬 Received signature: " + signature);
-
-            if (!expectedSignature.equals(signature)) {
-                return ResponseEntity.ok("fail");
-            }
-
-            // ✅ B3: Xử lý logic đơn hàng và thanh toán
-            String orderCode = data.optString("orderCode");
-            String statusCode = data.optString("code"); // "00" = success
-            String description = data.optString("desc");
-
-            System.out.println("✅ Verified webhook for order " + orderCode + " with status " + statusCode);
-
-            // 🔎 Tìm Payment theo transactionId
-            Payment payment = paymentRepository.findByTransactionId(orderCode).orElse(null);
             if (payment == null) {
-                System.out.println("⚠️ No payment found for transactionId " + orderCode);
+                // Unknown transactionId
                 return ResponseEntity.ok("fail");
             }
 
-            // ✅ Cập nhật trạng thái payment & order
-            if ("00".equals(statusCode)) {
+            // If already success, idempotent success response
+            if ("success".equalsIgnoreCase(payment.getStatus())) {
+                return ResponseEntity.ok("success");
+            }
+
+            boolean isSuccess = payload.isSuccess();
+
+            if (isSuccess) {
                 payment.setStatus("success");
-                payment.getOrder().setStatus("paid");
+                payment.setUpdatedAt(LocalDateTime.now());
+                paymentRepository.save(payment);
+
+                // Also mark order as paid
+                Order order = payment.getOrder();
+                if (order != null) {
+                    order.setStatus("paid");
+                    order.setUpdatedAt(LocalDateTime.now());
+                    orderRepository.save(order);
+                }
+
+                return ResponseEntity.ok("success");
             } else {
                 payment.setStatus("failed");
-                payment.getOrder().setStatus("pending");
+                payment.setUpdatedAt(LocalDateTime.now());
+                paymentRepository.save(payment);
+                return ResponseEntity.ok("fail");
             }
-
-            payment.setUpdatedAt(LocalDateTime.now());
-            paymentRepository.save(payment);
-
-            System.out.println("💾 Updated payment status: " + payment.getStatus());
-            System.out.println("💾 Updated order status: " + payment.getOrder().getStatus());
-
-            return ResponseEntity.ok("success");
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -244,13 +211,8 @@ public class PayOSAPI {
 
     @GetMapping("/webhook")
     public ResponseEntity<String> confirmWebhook() {
-        return ResponseEntity.ok("success");
+        return ResponseEntity.ok().header("Content-Type", "text/plain; charset=UTF-8").body("OK");
     }
 
-    private static Iterator<String> sortedIterator(Iterator<?> it, Comparator<String> comparator) {
-        List<String> list = new ArrayList<>();
-        while (it.hasNext()) list.add((String) it.next());
-        list.sort(comparator);
-        return list.iterator();
-    }
+
 }
