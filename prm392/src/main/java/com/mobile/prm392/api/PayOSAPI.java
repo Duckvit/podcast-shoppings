@@ -79,7 +79,7 @@ public class PayOSAPI {
             long orderCode = System.currentTimeMillis() / 1000;
             String description = "Thanh toán đơn hàng #" + order.getId();
             String returnUrl = "http://localhost:5173/payment-success"; // 🔧 chỉnh theo FE
-            String cancelUrl = "http://localhost:8080/payos/cancel-payment?orderCode=" + orderCode + "&status=cancelled";
+            String cancelUrl = "http://localhost:5173/payment-cancel";
 
             CreatePaymentLinkRequest paymentData = CreatePaymentLinkRequest.builder()
                     .orderCode(orderCode)
