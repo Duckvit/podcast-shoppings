@@ -211,7 +211,7 @@ public class PayOSAPI {
         }
     }
 
-    @GetMapping("/webhook")
+    @GetMapping("/test-webhook")
     public ResponseEntity<String> confirmWebhook() {
         System.out.println("✅ GET webhook confirmation called");
         return ResponseEntity.ok("OK");
