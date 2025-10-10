@@ -52,8 +52,8 @@ public class PayOSAPI {
     @PostMapping(path = "/create")
     public ApiResponse<CreatePaymentLinkResponse> createPaymentLink(@RequestBody CreatePaymentLinkRequestBody requestBody) {
         try {
-            // Lấy order từ DB
-            Order order = orderRepository.findById(requestBody.getOrderId())
+            // Lấy order từ DB (fetch items + products to avoid lazy init)
+            Order order = orderRepository.findWithItemsAndProductsById(requestBody.getOrderId())
                     .orElseThrow(() -> new RuntimeException("Order not found"));
 
             // Kiểm tra đã có payment chưa
