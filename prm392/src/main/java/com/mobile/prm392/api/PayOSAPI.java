@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/payos")
@@ -205,14 +206,21 @@ public class PayOSAPI {
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.ok("fail");
+            System.out.println("❌ Webhook Exception: " + e.getMessage());
+            return ResponseEntity.internalServerError().body("fail");
         }
     }
 
     @GetMapping("/webhook")
     public ResponseEntity<String> confirmWebhook() {
-        return ResponseEntity.ok().header("Content-Type", "text/plain; charset=UTF-8").body("OK");
+        System.out.println("✅ GET webhook confirmation called");
+        return ResponseEntity.ok("OK");
     }
 
+    @PostMapping("/receive-hook")
+    public ResponseEntity<Map<String, Object>> receiveHook(@RequestBody Map<String, Object> body) {
+        System.out.println("📩 Received webhook: " + body);
+        return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
+    }
 
 }

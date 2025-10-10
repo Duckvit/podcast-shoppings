@@ -153,6 +153,12 @@
             <version>20231013</version>
         </dependency>
 
+        <!-- Commons Codec for HMAC signature verification -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.16.0</version>
+        </dependency>
 
     </dependencies>
 
