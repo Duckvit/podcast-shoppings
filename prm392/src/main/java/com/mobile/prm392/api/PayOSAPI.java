@@ -10,15 +10,11 @@ import com.mobile.prm392.model.payos.UpdatePaymentStatusRequest;
 import com.mobile.prm392.model.payos.WebhookRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IPaymentRepository;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.view.RedirectView;
 import vn.payos.PayOS;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkRequest;
 import vn.payos.model.v2.paymentRequests.CreatePaymentLinkResponse;
@@ -31,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/payos")
@@ -82,7 +79,7 @@ public class PayOSAPI {
             long orderCode = System.currentTimeMillis() / 1000;
             String description = "Thanh toán đơn hàng #" + order.getId();
             String returnUrl = "http://localhost:5173/payment-success"; // 🔧 chỉnh theo FE
-            String cancelUrl = "http://localhost:5173/payment-cancel";
+            String cancelUrl = "http://localhost:8080/payos/cancel-payment?orderCode=" + orderCode + "&status=cancelled";
 
             CreatePaymentLinkRequest paymentData = CreatePaymentLinkRequest.builder()
                     .orderCode(orderCode)
@@ -115,46 +112,6 @@ public class PayOSAPI {
         }
     }
 
-    @PostMapping("/update-status")
-    public ApiResponse<String> updateStatus(@RequestBody UpdatePaymentStatusRequest request) {
-        try {
-            // Tìm payment theo transactionId
-            Payment payment = paymentRepository.findByTransactionId(request.getOrderCode())
-                    .orElseThrow(() -> new RuntimeException("Payment not found with transactionId: " + request.getOrderCode()));
-
-            // Nếu đã ở trạng thái success thì không cho cập nhật nữa
-            if ("success".equalsIgnoreCase(payment.getStatus())) {
-                throw new RuntimeException("Payment had been processed");
-            }
-
-            // Cập nhật trạng thái mới
-            if ("success".equalsIgnoreCase(request.getStatus()) || "PAID".equalsIgnoreCase(request.getStatus())) {
-                payment.setStatus("success");
-            } else if ("cancel".equalsIgnoreCase(request.getStatus()) || "CANCELLED".equalsIgnoreCase(request.getStatus())) {
-                payment.setStatus("cancel");
-            } else {
-                payment.setStatus("failed");
-            }
-
-            payment.setUpdatedAt(LocalDateTime.now());
-            paymentRepository.save(payment);
-
-            return ApiResponse.success("Payment status updated to " + payment.getStatus());
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ApiResponse.error("Error updating payment: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Webhook endpoint for PayOS to notify payment status updates.
-     * <p>
-     * To use this endpoint as your webhookUrl in PayOS, set:
-     * https://podcast-shoppings-1.onrender.com/api/payos/webhook
-     * <p>
-     * Example usage in PayOS API:
-     * webhookUrl: "https://podcast-shoppings-1.onrender.com/api/payos/webhook"
-     */
     @PostMapping("/webhook")
     public ResponseEntity<String> handleWebhook(@org.springframework.web.bind.annotation.RequestBody String rawJson) {
         try {
@@ -217,10 +174,34 @@ public class PayOSAPI {
         return ResponseEntity.ok("OK");
     }
 
-    @PostMapping("/receive-hook")
-    public ResponseEntity<Map<String, Object>> receiveHook(@RequestBody Map<String, Object> body) {
-        System.out.println("📩 Received webhook: " + body);
-        return ResponseEntity.ok(Collections.singletonMap("status", "ok"));
+    @PutMapping("/cancel")
+    public ResponseEntity<?> cancelOrderByTransactionId(@RequestParam String transactionId) {
+        Payment payment = paymentRepository.findByTransactionId(transactionId)
+                .orElse(null);
+
+        if (payment == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Payment not found");
+        }
+
+        Order order = payment.getOrder();
+        if (order == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Order not found for this payment");
+        }
+
+        // Cập nhật status
+        order.setStatus("cancelled");
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+
+        // Cập nhật payment
+        payment.setStatus("cancelled");
+        payment.setUpdatedAt(LocalDateTime.now());
+        paymentRepository.save(payment);
+
+        return ResponseEntity.ok("Order and Payment cancelled successfully");
     }
+
 
 }
