@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.Order;
+import com.mobile.prm392.model.order.CompleteOrderRequest;
 import com.mobile.prm392.model.order.OrderRequest;
 import com.mobile.prm392.model.order.OrderUpdateRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
@@ -95,9 +96,9 @@ public class OrderApi {
 
     @PutMapping("/complete")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<String> completeOrder(@RequestBody Map<String, Long> request) {
+    public ResponseEntity<String> completeOrder(@RequestBody CompleteOrderRequest request) {
         try {
-            Long orderId = request.get("orderId");
+            Long orderId = request.getOrderId();
             if (orderId == null) {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("orderId is null");
             }
