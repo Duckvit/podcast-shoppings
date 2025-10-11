@@ -5,6 +5,7 @@ import com.mobile.prm392.entities.Payment;
 import com.mobile.prm392.entities.Transaction;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.model.transaction.TransactionPageResponse;
+import com.mobile.prm392.model.transaction.TransactionResponse;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IPaymentRepository;
 import com.mobile.prm392.repositories.ITransactionRepository;
@@ -14,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,45 +42,153 @@ public class TransactionService {
     private IPaymentRepository paymentRepository;
 
     // Lấy tất cả transaction
+    @Transactional(readOnly = true)
     public TransactionPageResponse getAllTransactions(int page, int size) {
-         Page transactions = transactionRepository.findAll(PageRequest.of(page - 1, size));
+        Page<Transaction> transactions = transactionRepository.findAll(PageRequest.of(page - 1, size));
+
+        List<TransactionResponse> content = transactions.getContent().stream().map(tx -> {
+            TransactionResponse dto = new TransactionResponse();
+            dto.setId(tx.getId());
+            dto.setStatus(tx.getStatus());
+            dto.setCreatedAt(tx.getCreatedAt());
+            dto.setUpdatedAt(tx.getUpdatedAt());
+
+            if (tx.getFrom() != null) {
+                dto.setFromUserId(tx.getFrom().getId());
+                dto.setFromUsername(tx.getFrom().getUsername());
+            }
+            if (tx.getTo() != null) {
+                dto.setToUserId(tx.getTo().getId());
+                dto.setToUsername(tx.getTo().getUsername());
+            }
+            if (tx.getPayment() != null) {
+                dto.setPaymentId(tx.getPayment().getId());
+                if (tx.getPayment().getOrder() != null) {
+                    dto.setTotalAmount(tx.getPayment().getOrder().getTotalAmount());
+                    dto.setOrderStatus(tx.getPayment().getOrder().getStatus());
+                }
+            }
+
+            return dto;
+        }).toList();
 
         TransactionPageResponse response = new TransactionPageResponse();
-        response.setContent(transactions.getContent());
+        response.setContent(content);
         response.setPageNumber(transactions.getNumber());
         response.setTotalElements(transactions.getTotalElements());
         response.setTotalPages(transactions.getTotalPages());
+
         return response;
     }
+
 
     // Lấy transaction theo ID
-    public Optional<Transaction> getTransactionById(Long id) {
-        return transactionRepository.findById(id);
+    @Transactional
+    public TransactionResponse getTransactionById(Long id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Transaction not found"));
+
+        TransactionResponse response = new TransactionResponse();
+        response.setId(transaction.getId());
+        response.setStatus(transaction.getStatus());
+        response.setCreatedAt(transaction.getCreatedAt());
+        response.setUpdatedAt(transaction.getUpdatedAt());
+
+        if (transaction.getFrom() != null) {
+            response.setFromUserId(transaction.getFrom().getId());
+            response.setFromUsername(transaction.getFrom().getUsername());
+        }
+
+        if (transaction.getTo() != null) {
+            response.setToUserId(transaction.getTo().getId());
+            response.setToUsername(transaction.getTo().getUsername());
+        }
+
+        if (transaction.getPayment() != null) {
+            response.setPaymentId(transaction.getPayment().getId());
+        }
+
+        return response;
     }
+
 
     // Lấy transaction theo PaymentId
+    @Transactional(readOnly = true)
     public TransactionPageResponse getTransactionsByPaymentId(Long paymentId, int page, int size) {
-        Page transactions = transactionRepository.findByPaymentId(paymentId, PageRequest.of(page - 1, size));
+        Page<Transaction> transactions = transactionRepository.findByPaymentId(paymentId, PageRequest.of(page - 1, size));
+
+        List<TransactionResponse> content = transactions.getContent().stream().map(tx -> {
+            TransactionResponse dto = new TransactionResponse();
+            dto.setId(tx.getId());
+            dto.setStatus(tx.getStatus());
+            dto.setCreatedAt(tx.getCreatedAt());
+            dto.setUpdatedAt(tx.getUpdatedAt());
+
+            if (tx.getFrom() != null) {
+                dto.setFromUserId(tx.getFrom().getId());
+                dto.setFromUsername(tx.getFrom().getUsername());
+            }
+            if (tx.getTo() != null) {
+                dto.setToUserId(tx.getTo().getId());
+                dto.setToUsername(tx.getTo().getUsername());
+            }
+            if (tx.getPayment() != null) {
+                dto.setPaymentId(tx.getPayment().getId());
+                if (tx.getPayment().getOrder() != null) {
+                    dto.setTotalAmount(tx.getPayment().getOrder().getTotalAmount());
+                    dto.setOrderStatus(tx.getPayment().getOrder().getStatus());
+                }
+            }
+            return dto;
+        }).toList();
 
         TransactionPageResponse response = new TransactionPageResponse();
-        response.setContent(transactions.getContent());
+        response.setContent(content);
         response.setPageNumber(transactions.getNumber());
         response.setTotalElements(transactions.getTotalElements());
         response.setTotalPages(transactions.getTotalPages());
         return response;
     }
+
 
     // Lấy transaction theo status
+    @Transactional(readOnly = true)
     public TransactionPageResponse getTransactionsByStatus(String status, int page, int size) {
-        Page transactions = transactionRepository.findByStatus(status, PageRequest.of(page - 1, size));
+        Page<Transaction> transactions = transactionRepository.findByStatus(status, PageRequest.of(page - 1, size));
+
+        List<TransactionResponse> content = transactions.getContent().stream().map(tx -> {
+            TransactionResponse dto = new TransactionResponse();
+            dto.setId(tx.getId());
+            dto.setStatus(tx.getStatus());
+            dto.setCreatedAt(tx.getCreatedAt());
+            dto.setUpdatedAt(tx.getUpdatedAt());
+
+            if (tx.getFrom() != null) {
+                dto.setFromUserId(tx.getFrom().getId());
+                dto.setFromUsername(tx.getFrom().getUsername());
+            }
+            if (tx.getTo() != null) {
+                dto.setToUserId(tx.getTo().getId());
+                dto.setToUsername(tx.getTo().getUsername());
+            }
+            if (tx.getPayment() != null) {
+                dto.setPaymentId(tx.getPayment().getId());
+                if (tx.getPayment().getOrder() != null) {
+                    dto.setTotalAmount(tx.getPayment().getOrder().getTotalAmount());
+                    dto.setOrderStatus(tx.getPayment().getOrder().getStatus());
+                }
+            }
+            return dto;
+        }).toList();
 
         TransactionPageResponse response = new TransactionPageResponse();
-        response.setContent(transactions.getContent());
+        response.setContent(content);
         response.setPageNumber(transactions.getNumber());
         response.setTotalElements(transactions.getTotalElements());
         response.setTotalPages(transactions.getTotalPages());
         return response;
     }
+
 
     // Tạo hoặc cập nhật transaction
 //    public Transaction saveTransaction(Transaction transaction) {

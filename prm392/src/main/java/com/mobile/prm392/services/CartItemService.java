@@ -2,10 +2,12 @@ package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.*;
 import com.mobile.prm392.repositories.ICartItemRepository;
+import com.mobile.prm392.repositories.ICartRepository;
 import com.mobile.prm392.repositories.IProductRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +21,21 @@ public class CartItemService {
     @Autowired
     private IProductRepository productRepository;
 
+    @Autowired
+    private ICartRepository cartRepository;
+
     // Thêm sản phẩm vào giỏ hàng
+    @Transactional
     public CartItem addItem(Cart cart, Long productId, int quantity) {
+        // Tải lại cart từ DB để chắc chắn nó được quản lý bởi Hibernate
+        Cart managedCart = cartRepository.findById(cart.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Cart not found"));
+
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
-        CartItem existingItem = cart.getItems().stream()
+        // Truy cập an toàn (Hibernate Session vẫn mở)
+        CartItem existingItem = managedCart.getItems().stream()
                 .filter(ci -> ci.getProduct().getId().equals(productId))
                 .findFirst()
                 .orElse(null);
@@ -34,17 +45,19 @@ public class CartItemService {
             return cartItemRepository.save(existingItem);
         } else {
             CartItem cartItem = new CartItem();
-            cartItem.setCart(cart);
+            cartItem.setCart(managedCart);
             cartItem.setProduct(product);
             cartItem.setQuantity(quantity);
             cartItem.setPrice(product.getPrice() * quantity);
             product.setStockQuantity(product.getStockQuantity() - quantity);
             productRepository.save(product);
             cartItemRepository.save(cartItem);
-            cart.getItems().add(cartItem);
+            managedCart.getItems().add(cartItem);
             return cartItem;
         }
     }
+
+
 
     // Xóa item khỏi giỏ hàng
     public void removeItem(Long cartItemId) {

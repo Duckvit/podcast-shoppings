@@ -31,8 +31,8 @@ public class FavoritePodcastApi {
     // 2. Thêm hoặc đánh dấu favorite
     @PostMapping("/{podcastId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<FavoritePodcast> addFavorite(@PathVariable Long podcastId) {
-        FavoritePodcast favorite = favoritePodcastService.toggleFavorite(podcastId);
+    public ResponseEntity addFavorite(@PathVariable Long podcastId) {
+        FavoritePodcastResponse favorite = favoritePodcastService.toggleFavorite(podcastId);
         return ResponseEntity.ok(favorite);
     }
 
