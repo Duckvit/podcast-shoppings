@@ -9,6 +9,7 @@ import com.mobile.prm392.repositories.IProductRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ public class CartService {
     private ModelMapper modelMapper;
 
     // Lấy giỏ hàng active của user hoặc tạo mới
+    @Transactional
     public Cart getOrCreateCart() {
         User user = authenticationService.getCurrentUser();
         return cartRepository.findByUserIdAndIsActiveTrue(user.getId())
@@ -48,7 +50,7 @@ public class CartService {
     }
 
     // lay gio hang gui len api
-
+    @Transactional
     public CartResponse getOrCreateCartResponse() {
         User user = authenticationService.getCurrentUser();
 
@@ -66,12 +68,14 @@ public class CartService {
 
 
     // Tính tổng tiền giỏ hàng
+    @Transactional
     public double calculateTotal() {
         Cart cart = getOrCreateCart();
         return cartItemService.calculateTotal(cart);
     }
 
     // Checkout: từ cart tạo Order
+    @Transactional
     public Order checkoutCart(OrderAddress orderAddress) {
         Cart cart = getOrCreateCart();
         if (cart.getItems().isEmpty()) {

@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.Transaction;
+import com.mobile.prm392.model.transaction.TransactionResponse;
 import com.mobile.prm392.services.TransactionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,10 +33,9 @@ public class TransactionApi {
     // Lấy transaction theo ID
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) {
-        Optional<Transaction> transaction = transactionService.getTransactionById(id);
-        return transaction.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity getTransactionById(@PathVariable Long id) {
+        TransactionResponse transaction = transactionService.getTransactionById(id);
+        return ResponseEntity.ok(transaction);
     }
 
     // Lấy transaction theo PaymentId

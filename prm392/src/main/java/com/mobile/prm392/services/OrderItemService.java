@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class OrderItemService {
     private IOrderItemRepository orderItemRepository;
 
     // Lấy tất cả order items
+    @Transactional
     public OrderItemPageResposne getAllOrderItems(int page, int size) {
         Page orderItem = orderItemRepository.findAll(PageRequest.of(page - 1, size));
 
@@ -30,17 +32,20 @@ public class OrderItemService {
     }
 
     // Lấy order item theo id
+    @Transactional
     public OrderItem getOrderItemById(Long id) {
         return orderItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("OrderItem not found with id: " + id));
     }
 
     // Tạo order item mới
+    @Transactional
     public OrderItem createOrderItem(OrderItem orderItem) {
         return orderItemRepository.save(orderItem);
     }
 
     // Cập nhật order item
+    @Transactional
     public OrderItem updateOrderItem(Long id, OrderItem orderItem) {
         OrderItem existingOrderItem = orderItemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("OrderItem not found with id: " + id));
@@ -54,6 +59,7 @@ public class OrderItemService {
     }
 
     // Xóa order item
+    @Transactional
     public void deleteOrderItem(Long id) {
         if (!orderItemRepository.existsById(id)) {
             throw new EntityNotFoundException("OrderItem not found with id: " + id);

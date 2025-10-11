@@ -1,6 +1,7 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.Podcast;
+import com.mobile.prm392.model.podcast.PodcastResponse;
 import com.mobile.prm392.services.PodcastService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -32,7 +33,7 @@ public class PodcastApi {
             value = "/upload",
             consumes = {"multipart/form-data"}
     )
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     public ResponseEntity<Podcast> uploadPodcast(
             @RequestParam String title,
             @RequestParam(required = false) String description,
@@ -93,8 +94,8 @@ public class PodcastApi {
 
     @Operation(summary = "Get podcast by category id", description = "Truyền categoryName vào đường dẫn")
     @GetMapping("/category/{categoryName}")
-    public ResponseEntity<List<Podcast>> getPodcastsByCategoryName(@PathVariable String categoryName) {
-        List<Podcast> podcasts = podcastService.getPodcastsByCategoryName(categoryName);
+    public ResponseEntity getPodcastsByCategoryName(@PathVariable String categoryName) {
+        List<PodcastResponse> podcasts = podcastService.getPodcastsByCategoryName(categoryName);
         if (podcasts.isEmpty()) {
             return ResponseEntity.noContent().build();
         }

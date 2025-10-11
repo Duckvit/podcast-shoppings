@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,6 +40,7 @@ public class PaymentService {
     private ModelMapper modelMapper;
 
     // Lấy tất cả Payment
+    @Transactional
     public PaymentPageResponse getAllPayments(int page, int size) {
         Page<Payment> paymentPage = paymentRepository.findAll(PageRequest.of(page - 1, size));
 
@@ -58,6 +60,7 @@ public class PaymentService {
 
 
     // Lấy Payment theo id
+    @Transactional
     public PaymentResponse getPaymentById(Long id) {
         Payment payment = paymentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Payment not found with id: " + id));
@@ -67,6 +70,7 @@ public class PaymentService {
 
 
     // Cập nhật Payment
+    @Transactional
     public Payment updatePayment(Long id, Payment payment) {
         Payment existingPayment = paymentRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Payment not found with id: " + id));
@@ -83,6 +87,7 @@ public class PaymentService {
     }
 
     // Xóa Payment
+    @Transactional
     public void deletePayment(Long id) {
         if (!paymentRepository.existsById(id)) {
             throw new EntityNotFoundException("Payment not found with id: " + id);
@@ -91,6 +96,7 @@ public class PaymentService {
     }
 
     // thanh toan order
+    @Transactional
     public String createUrl(Long orderId) throws  Exception {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
         LocalDateTime createDate = LocalDateTime.now();

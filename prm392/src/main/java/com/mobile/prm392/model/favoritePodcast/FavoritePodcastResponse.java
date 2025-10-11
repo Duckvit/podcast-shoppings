@@ -5,6 +5,9 @@ import lombok.Data;
 @Data
 public class FavoritePodcastResponse {
     private Long id;
+    private boolean active;
     private Long podcastId;
-    private String podcastTitle; // có thể lấy tên podcast
+    private String podcastTitle;
+    private Long userId;
+    private String username;
 }
