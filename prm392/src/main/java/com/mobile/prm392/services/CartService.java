@@ -2,6 +2,7 @@ package com.mobile.prm392.services;
 
 import com.mobile.prm392.entities.*;
 import com.mobile.prm392.model.cart.CartResponse;
+import com.mobile.prm392.model.order.OrderAddress;
 import com.mobile.prm392.repositories.ICartRepository;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IProductRepository;
@@ -71,7 +72,7 @@ public class CartService {
     }
 
     // Checkout: từ cart tạo Order
-    public Order checkoutCart() {
+    public Order checkoutCart(OrderAddress orderAddress) {
         Cart cart = getOrCreateCart();
         if (cart.getItems().isEmpty()) {
             throw new IllegalStateException("Giỏ hàng đang trống!");
@@ -79,6 +80,7 @@ public class CartService {
 
         Order order = new Order();
         order.setUser(cart.getUser());
+        order.setAddress(orderAddress.getAddress());
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
         order.setStatus("Pending");

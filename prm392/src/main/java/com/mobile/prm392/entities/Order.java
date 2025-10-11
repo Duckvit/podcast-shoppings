@@ -29,6 +29,8 @@ public class Order {
     @Column(length = 20)
     private String status = "pending"; // pending, paid, shipped
 
+    private String address;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
