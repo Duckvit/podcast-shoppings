@@ -4,6 +4,7 @@ import com.mobile.prm392.entities.Cart;
 import com.mobile.prm392.entities.CartItem;
 import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.model.cart.CartResponse;
+import com.mobile.prm392.model.order.OrderAddress;
 import com.mobile.prm392.services.CartService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +41,8 @@ public class CartApi {
     // Checkout giỏ hàng → tạo Order
     @PostMapping("/checkout")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity checkoutCart() {
-        Order order = cartService.checkoutCart();
+    public ResponseEntity checkoutCart(@RequestBody OrderAddress orderAddress) {
+        Order order = cartService.checkoutCart(orderAddress);
         return ResponseEntity.ok(order);
     }
 }
