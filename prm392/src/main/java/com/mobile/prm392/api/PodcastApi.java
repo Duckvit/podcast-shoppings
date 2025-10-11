@@ -37,9 +37,10 @@ public class PodcastApi {
             @RequestParam String title,
             @RequestParam(required = false) String description,
             @RequestPart("file") MultipartFile file,
+            @RequestParam List<Long> categoryIds,
             @RequestPart(value = "imageFile", required = false) MultipartFile imageFile) throws IOException {
 
-        Podcast podcast = podcastService.uploadPodcast(title, description, file, imageFile);
+        Podcast podcast = podcastService.uploadPodcast(title, description, file, imageFile, categoryIds);
         return ResponseEntity.ok(podcast);
     }
 
@@ -71,9 +72,10 @@ public class PodcastApi {
             @RequestParam(required = false) String title,
             @RequestParam(required = false) String description,
             @RequestPart(value = "file", required = false) MultipartFile file,
-            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile
+            @RequestPart(value = "imageFile", required = false) MultipartFile imageFile,
+            @RequestParam(value = "category", required = false) List<Long> categoryIds
     ) throws IOException {
-        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file, imageFile));
+        return ResponseEntity.ok(podcastService.updatePodcast(id, title, description, file, imageFile, categoryIds));
     }
 
 
@@ -87,6 +89,16 @@ public class PodcastApi {
     @PutMapping("/{id}/restore")
     public ResponseEntity<Podcast> restorePodcast(@PathVariable Long id) {
         return ResponseEntity.ok(podcastService.restore(id));
+    }
+
+    @Operation(summary = "Get podcast by category id", description = "Truyền categoryName vào đường dẫn")
+    @GetMapping("/category/{categoryName}")
+    public ResponseEntity<List<Podcast>> getPodcastsByCategoryName(@PathVariable String categoryName) {
+        List<Podcast> podcasts = podcastService.getPodcastsByCategoryName(categoryName);
+        if (podcasts.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(podcasts);
     }
 
 }

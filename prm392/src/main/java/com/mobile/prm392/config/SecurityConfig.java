@@ -33,17 +33,17 @@ public class SecurityConfig {
     Filter filter;
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http)  throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 //        return http
 //                .csrf(AbstractHttpConfigurer::disable)
 //                .authorizeHttpRequests(
@@ -61,18 +61,23 @@ public class SecurityConfig {
                 .cors().and()
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép tất cả pre-flight requests
+                                .requestMatchers(CorsUtils::isPreFlightRequest).permitAll() // Cho phép tất cả pre-flight requests
 //                        .requestMatchers("/**").permitAll()
-                        .requestMatchers("/api/auth/**").permitAll() // login, register
-                        .requestMatchers("/api/gemini/**").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll() // login, register
+
+                                .requestMatchers("/api/gemini/**").permitAll()
+
+                                .requestMatchers("/api/auth/forgot-password").permitAll()
+
                                 .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
-                        // Cho phép Swagger endpoints
-                        .requestMatchers("/v3/api-docs/**").permitAll()
-                        .requestMatchers("/swagger-ui/**").permitAll()
-                        .requestMatchers("/swagger-ui.html").permitAll()
-                        .requestMatchers("/swagger-resources/**").permitAll()
-                        .requestMatchers("/webjars/**").permitAll()
-                        .anyRequest().authenticated()
+                                // Cho phép Swagger endpoints
+                                .requestMatchers("/v3/api-docs/**").permitAll()
+                                .requestMatchers("/swagger-ui/**").permitAll()
+                                .requestMatchers("/swagger-ui.html").permitAll()
+                                .requestMatchers("/swagger-resources/**").permitAll()
+                                .requestMatchers("/webjars/**").permitAll()
+                                .requestMatchers("/payos/**").permitAll()
+                                .anyRequest().authenticated()
                 )
                 .userDetailsService(authenticationService)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -103,7 +108,7 @@ public class SecurityConfig {
 
 
     @Bean
-    public ModelMapper modelMapper(){
+    public ModelMapper modelMapper() {
         return new ModelMapper();
     }
 //    @Bean

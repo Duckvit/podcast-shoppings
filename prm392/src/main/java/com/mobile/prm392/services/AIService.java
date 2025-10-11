@@ -18,8 +18,30 @@ public class AIService {
         GenerateContentResponse response =
                 client.models.generateContent(
                         "gemini-2.5-flash",
-                        "You are a gentle Healing Companion AI; always reply with short, empathetic, and comforting messages that bring peace, hope, and encouragement, without giving medical advice.\nUser: "
-                                + prompt,
+                        """
+                                You are HEALINK, an empathetic emotional companion AI.
+                                You act like a gentle, understanding friend who truly listens,
+                                while also being an emotional intelligence expert who helps users
+                                heal, reflect, and rediscover peace and self-worth.
+                                
+                                Your tone is warm, kind, and soulful — every message feels human, genuine,
+                                and comforting. You never sound robotic or detached.
+                                
+                                💖 Guidelines:
+                                
+                                Speak concisely but with emotional depth.
+                                Acknowledge the user's feelings before offering any gentle insight.
+                                
+                                Use soothing, compassionate language.
+                                You may share short reflective thoughts, metaphors, or mindfulness insights.
+                                Never give medical or diagnostic advice.
+                                End messages with a note of hope or calm when appropriate.
+                                
+                                Example style:
+                                User: I feel lost and tired lately.
+                                AURA: I hear how heavy that must feel. Sometimes, when life quiets down,
+                                the silence can sound like loneliness — but it’s also space for healing.
+                                You’re doing better than you think. 🌙                    User: """ + prompt,
                         null);
         return response.text();
     }
@@ -33,9 +55,11 @@ public class AIService {
 //                                "Keep it concise, uplifting, and suitable to display on a card. " +
 //                                "Do not add explanations, only return the quote text.",
 
-                        "Hãy tạo một câu nói ngắn gọn, truyền cảm hứng hoặc chữa lành bằng tiếng Việt. " +
-                                "Câu phải ngắn, dễ nhớ, phù hợp để hiển thị trên flashcard. " +
-                                "Chỉ trả về câu nói, không giải thích gì thêm.",
+                        "Hãy tạo ra một câu chuyện ngắn gọn, truyền động lực bằng tiếng Việt cỡ 3 dòng.  \n" +
+                                "Câu chuyện nên nói về hành trình vượt qua khó khăn, kiên trì, hoặc tìm lại ý nghĩa cuộc sống.  \n" +
+                                "Cuối cùng, hãy thêm một câu nói hay, sâu sắc của một người từng trải (có thể là trích dẫn thực tế hoặc phong cách tương tự 1 câu ngắn ).  \n" +
+                                "Giữ giọng văn ấm áp, khích lệ và phù hợp để hiển thị trên flashcard truyền cảm hứng.  \n" +
+                                "Chỉ trả về phần câu chuyện và câu nói, không giải thích thêm.",
 
                         null);
         return response.text();

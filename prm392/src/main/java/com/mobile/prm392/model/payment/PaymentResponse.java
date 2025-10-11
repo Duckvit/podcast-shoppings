@@ -8,8 +8,8 @@ import java.time.LocalDateTime;
 @Data
 public class PaymentResponse {
     private Long id;
-    private String method;
-    private String status;
+    private String method = "payos";
+    private String status = "pending";
     private Double amount;
     private LocalDateTime createdAt;
 

@@ -1,9 +1,11 @@
 package com.mobile.prm392.services;
 
+import com.mobile.prm392.entities.Category;
 import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.midleware.Duplicate;
 import com.mobile.prm392.model.podcast.PodcastPageResponse;
+import com.mobile.prm392.repositories.ICategoryRepository;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import com.mobile.prm392.repositories.IUserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,12 +26,15 @@ public class PodcastService {
     private IPodcastRepository podcastRepository;
 
     @Autowired
+    private ICategoryRepository categoryRepository;
+
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     @Autowired
     private AuthenticationService authenticationService;
 
-    public Podcast uploadPodcast(String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
+    public Podcast uploadPodcast(String title, String description, MultipartFile file, MultipartFile file1, List<Long> categoryIds) throws IOException {
         User user = authenticationService.getCurrentUser();
 
         // Upload file audio lên Cloudinary
@@ -38,10 +43,13 @@ public class PodcastService {
         // Upload file anh lên Cloudinary
         String imgUrl = cloudinaryService.uploadImage(file1);
 
+        List<Category> categories = categoryRepository.findAllById(categoryIds);
+
         // Lưu metadata xuống DB
         Podcast podcast = new Podcast();
         podcast.setTitle(title);
         podcast.setDescription(description);
+        podcast.setCategories(categories);
         podcast.setAudioUrl(audioUrl);
         podcast.setImageUrl(imgUrl);
         podcast.setUser(user);
@@ -81,7 +89,7 @@ public class PodcastService {
     }
 
     // 5. Update Podcast
-    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1) throws IOException {
+    public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1, List<Long> categoryIds) throws IOException {
         User user = authenticationService.getCurrentUser();
         Podcast podcast = podcastRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
@@ -103,6 +111,11 @@ public class PodcastService {
         if (file1 != null && !file1.isEmpty()) {
             String imgUrl = cloudinaryService.uploadImage(file1);
             podcast.setImageUrl(imgUrl);
+        }
+
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            List<Category> categories = categoryRepository.findAllById(categoryIds);
+            podcast.setCategories(categories);
         }
 
         podcast.setUpdatedAt(java.time.LocalDateTime.now());
@@ -135,6 +148,11 @@ public class PodcastService {
 
         podcast.setActive(true);
         return podcastRepository.save(podcast);
+    }
+
+    // 8. Tìm podcast qua tên category
+    public List<Podcast> getPodcastsByCategoryName(String categoryName) {
+        return podcastRepository.findByCategoryName(categoryName);
     }
 }
 

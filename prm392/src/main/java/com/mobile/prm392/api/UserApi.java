@@ -1,10 +1,13 @@
 package com.mobile.prm392.api;
 
 import com.mobile.prm392.entities.User;
+import com.mobile.prm392.model.response.Response;
 import com.mobile.prm392.model.user.UserResponse;
 import com.mobile.prm392.model.user.UserRoleRequest;
 import com.mobile.prm392.model.user.UserUpdateRequest;
+import com.mobile.prm392.services.AuthenticationService;
 import com.mobile.prm392.services.UserService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +25,9 @@ public class UserApi {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AuthenticationService authenticationService;
 
     // Lấy tất cả user
     @GetMapping
@@ -105,4 +111,10 @@ public class UserApi {
         }
     }
 
+    @Operation(summary = "Change password", description = "Để thay đổi password khi quên password")
+    @PostMapping("/change-password")
+    public ResponseEntity<Response> changePasswordInUser(@RequestBody Response changeRequest){
+        Response response = authenticationService.changePasswordInUser(changeRequest);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
 }

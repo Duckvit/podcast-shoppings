@@ -88,6 +88,7 @@ public class OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));
         return modelMapper.map(order, OrderResponse.class);
     }
+
     // Tạo mới order
     public Order createOrder(OrderRequest orderRequest) {
 
@@ -100,7 +101,7 @@ public class OrderService {
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
 
-        for(OrderItemRequest orderItemRequest : orderRequest.getItems()){
+        for (OrderItemRequest orderItemRequest : orderRequest.getItems()) {
 
             Product product = productRepository.findById(orderItemRequest.getProductId())
                     .orElseThrow(() -> new EntityNotFoundException("Product not found: " + orderItemRequest.getProductId()));
@@ -127,7 +128,7 @@ public class OrderService {
         }
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
-        order.setStatus("Pending");
+        order.setStatus("pending");
 
         return orderRepository.save(order);
     }
@@ -187,7 +188,6 @@ public class OrderService {
     }
 
 
-
     // Xóa order (soft delete + hoàn lại số lượng product)
     public boolean deleteOrder(Long id) {
         boolean result;
@@ -210,9 +210,15 @@ public class OrderService {
         return result;
     }
 
-
-
-
-
-
+    public boolean markAsComplete(long orderId) {
+        Optional<Order> existingOrder = orderRepository.findById(orderId);
+        if (existingOrder.isEmpty()) {
+            return false;
+        }
+        Order order = existingOrder.get();
+        order.setStatus("completed");
+        order.setUpdatedAt(LocalDateTime.now());
+        orderRepository.save(order);
+        return true;
+    }
 }

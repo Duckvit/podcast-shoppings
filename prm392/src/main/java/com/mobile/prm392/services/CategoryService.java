@@ -27,7 +27,7 @@ public class CategoryService {
 
     public Category updateCategory(Long id, Category category) {
         Category existing = getCategoryById(id);
-        existing.setDescription(category.getDescription());
+        existing.setName(category.getName());
         return iCategoryRepository.save(existing);
     }
 
