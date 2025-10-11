@@ -3,6 +3,7 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.model.order.OrderRequest;
 import com.mobile.prm392.model.order.OrderUpdateRequest;
+import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.services.OrderService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
@@ -12,7 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -22,6 +25,9 @@ public class OrderApi {
 
     @Autowired
     private OrderService orderService;
+
+    @Autowired
+    private IOrderRepository orderRepository;
 
     // Lấy tất cả orders
     @GetMapping
@@ -81,10 +87,35 @@ public class OrderApi {
 //        }
         boolean result = orderService.deleteOrder(id);
         String resultString;
-        if(result){
+        if (result) {
             resultString = "Delete successfully";
         }
         return ResponseEntity.ok(result);
+    }
+
+    @PutMapping("/complete")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    public ResponseEntity<String> completeOrder(@RequestBody Map<String, Long> request) {
+        try {
+            Long orderId = request.get("orderId");
+            if (orderId == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("orderId is null");
+            }
+
+            Order order = orderRepository.findById(orderId).orElse(null);
+            if (order == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("order not found");
+            }
+
+            order.setStatus("completed");
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+
+            return ResponseEntity.ok("Order completed");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating complete order");
+        }
     }
 
 }
