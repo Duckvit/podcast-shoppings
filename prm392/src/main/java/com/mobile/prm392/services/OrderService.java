@@ -51,7 +51,11 @@ public class OrderService {
     public OrderPageResponse getAllOrders(int page, int size) {
         Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
 
+//        List<OrderResponse> content = orderPage.getContent().stream()
+//                .map(order -> modelMapper.map(order, OrderResponse.class))
+//                .toList();
         List<OrderResponse> content = orderPage.getContent().stream()
+                .peek(order -> order.getItems().size()) // Ép Hibernate load danh sách items
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
 
@@ -98,6 +102,7 @@ public class OrderService {
         Double totalAmount = 0.0;
 
         order.setUser(user);
+        order.setAddress(order.getAddress());
         order.setCreatedAt(LocalDateTime.now());
         order.setUpdatedAt(LocalDateTime.now());
 
@@ -129,6 +134,7 @@ public class OrderService {
         order.setItems(orderItems);
         order.setTotalAmount(totalAmount);
         order.setStatus("pending");
+        order.setAddress(orderRequest.getAddress());
 
         return orderRepository.save(order);
     }

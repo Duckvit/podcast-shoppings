@@ -3,6 +3,7 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.entities.Category;
 import com.mobile.prm392.services.CategoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +14,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/categories")
 @RequiredArgsConstructor
+@CrossOrigin("*") // cho phep tat ca truy cap, ket noi FE va BE vs nhau
+@SecurityRequirement(name = "api") // tao controller moi nho copy qua
 public class CategoryAPI {
     private final CategoryService categoryService;
 
