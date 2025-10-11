@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class TransactionPageResponse {
-    private List<Transaction> content;
+    private List<TransactionResponse> content;
     private int pageNumber;
     private long totalElements;
     private int totalPages;

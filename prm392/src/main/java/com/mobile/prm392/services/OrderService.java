@@ -9,6 +9,7 @@ import com.mobile.prm392.model.order.OrderRequest;
 import com.mobile.prm392.model.order.OrderResponse;
 import com.mobile.prm392.model.order.OrderUpdateRequest;
 import com.mobile.prm392.model.orderItem.OrderItemRequest;
+import com.mobile.prm392.model.orderItem.OrderItemResponse;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.repositories.IProductRepository;
 import com.mobile.prm392.repositories.IUserRepository;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -47,15 +49,32 @@ public class OrderService {
     @Autowired
     private ModelMapper modelMapper;
 
-    // Lấy tất cả order
+//    // Lấy tất cả order
+//    public OrderPageResponse getAllOrders(int page, int size) {
+//        Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
+//
+////        List<OrderResponse> content = orderPage.getContent().stream()
+////                .map(order -> modelMapper.map(order, OrderResponse.class))
+////                .toList();
+//        List<OrderResponse> content = orderPage.getContent().stream()
+//                .peek(order -> order.getItems().size()) // Ép Hibernate load danh sách items
+//                .map(order -> modelMapper.map(order, OrderResponse.class))
+//                .toList();
+//
+//        OrderPageResponse response = new OrderPageResponse();
+//        response.setContent(content);
+//        response.setPageNumber(orderPage.getNumber());
+//        response.setTotalElements(orderPage.getTotalElements());
+//        response.setTotalPages(orderPage.getTotalPages());
+//        return response;
+//    }
+
+    @Transactional(readOnly = true)
     public OrderPageResponse getAllOrders(int page, int size) {
         Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
 
-//        List<OrderResponse> content = orderPage.getContent().stream()
-//                .map(order -> modelMapper.map(order, OrderResponse.class))
-//                .toList();
         List<OrderResponse> content = orderPage.getContent().stream()
-                .peek(order -> order.getItems().size()) // Ép Hibernate load danh sách items
+                .peek(order -> order.getItems().size()) // ép load
                 .map(order -> modelMapper.map(order, OrderResponse.class))
                 .toList();
 
@@ -68,13 +87,42 @@ public class OrderService {
     }
 
     // Lấy tất cả order theo userId
+//    public OrderPageResponse getOrdersByUserId(Long userId, int page, int size) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new EntityNotFoundException("user not found: " + userId));
+//        Page<Order> orderPage = orderRepository.findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
+//
+//        List<OrderResponse> content = orderPage.getContent().stream()
+//                .map(order -> modelMapper.map(order, OrderResponse.class))
+//                .toList();
+//
+//        OrderPageResponse response = new OrderPageResponse();
+//        response.setContent(content);
+//        response.setPageNumber(orderPage.getNumber());
+//        response.setTotalElements(orderPage.getTotalElements());
+//        response.setTotalPages(orderPage.getTotalPages());
+//        return response;
+//    }
+
+    @Transactional(readOnly = true)
     public OrderPageResponse getOrdersByUserId(Long userId, int page, int size) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("user not found: " + userId));
-        Page<Order> orderPage = orderRepository.findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
+
+        Page<Order> orderPage = orderRepository.findByUserIdAndIsActiveTrue(
+                userId, PageRequest.of(page - 1, size)
+        );
 
         List<OrderResponse> content = orderPage.getContent().stream()
-                .map(order -> modelMapper.map(order, OrderResponse.class))
+                .peek(order -> order.getItems().size()) // ép Hibernate load items
+                .map(order -> {
+                    OrderResponse response = modelMapper.map(order, OrderResponse.class);
+                    // Ép kiểu List<OrderItemResponse> từ PersistentBag -> List
+                    response.setItems(order.getItems().stream()
+                            .map(item -> modelMapper.map(item, OrderItemResponse.class))
+                            .toList());
+                    return response;
+                })
                 .toList();
 
         OrderPageResponse response = new OrderPageResponse();
@@ -87,6 +135,7 @@ public class OrderService {
 
 
     // Lấy order theo id
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(Long id) {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + id));

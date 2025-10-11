@@ -5,6 +5,7 @@ import com.mobile.prm392.entities.Podcast;
 import com.mobile.prm392.entities.User;
 import com.mobile.prm392.midleware.Duplicate;
 import com.mobile.prm392.model.podcast.PodcastPageResponse;
+import com.mobile.prm392.model.podcast.PodcastResponse;
 import com.mobile.prm392.repositories.ICategoryRepository;
 import com.mobile.prm392.repositories.IPodcastRepository;
 import com.mobile.prm392.repositories.IUserRepository;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -58,35 +60,95 @@ public class PodcastService {
     }
 
     // 2. Lấy tất cả Podcast active
+    @Transactional(readOnly = true)
     public PodcastPageResponse getAll(int page, int size) {
-        Page podcast = podcastRepository.findAllByIsActiveTrue(PageRequest.of(page - 1, size));
+        Page<Podcast> podcastPage = podcastRepository.findAllByIsActiveTrue(PageRequest.of(page - 1, size));
+
+        List<PodcastResponse> content = podcastPage.getContent().stream()
+                .map(podcast -> {
+                    PodcastResponse dto = new PodcastResponse();
+                    dto.setId(podcast.getId());
+                    dto.setTitle(podcast.getTitle());
+                    dto.setDescription(podcast.getDescription());
+                    dto.setAudioUrl(podcast.getAudioUrl());
+                    dto.setImageUrl(podcast.getImageUrl());
+                    dto.setActive(podcast.isActive());
+                    dto.setCreatedAt(podcast.getCreatedAt());
+                    dto.setUpdatedAt(podcast.getUpdatedAt());
+                    dto.setCategories(podcast.getCategories()
+                            .stream()
+                            .map(Category::getName) // lấy tên category thôi
+                            .toList());
+                    return dto;
+                })
+                .toList();
 
         PodcastPageResponse response = new PodcastPageResponse();
-        response.setContent(podcast.getContent());
-        response.setTotalPages(podcast.getTotalPages());
-        response.setPageNumber(podcast.getNumber());
-        response.setTotalElements(podcast.getTotalElements());
+        response.setContent(content);
+        response.setTotalPages(podcastPage.getTotalPages());
+        response.setPageNumber(podcastPage.getNumber());
+        response.setTotalElements(podcastPage.getTotalElements());
         return response;
     }
+
 
     // 3. Lấy theo ID
-    public Podcast getById(Long id) {
-        return podcastRepository.findById(id)
+    @Transactional(readOnly = true)
+    public PodcastResponse getById(Long id) {
+        Podcast podcast = podcastRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
+
+        PodcastResponse dto = new PodcastResponse();
+        dto.setId(podcast.getId());
+        dto.setTitle(podcast.getTitle());
+        dto.setDescription(podcast.getDescription());
+        dto.setAudioUrl(podcast.getAudioUrl());
+        dto.setImageUrl(podcast.getImageUrl());
+
+        dto.setCategories(podcast.getCategories()
+                .stream()
+                .map(Category::getName) // chỉ lấy tên
+                .toList());
+
+        return dto;
     }
+
 
     // 4. Lấy theo user hiện tại
+    @Transactional(readOnly = true)
     public PodcastPageResponse getMyPodcasts(int page, int size) {
         User user = authenticationService.getCurrentUser();
-        Page podcast = podcastRepository.findByUserIdAndIsActiveTrue(user.getId(), PageRequest.of(page - 1, size));
+        Page<Podcast> podcastPage = podcastRepository.findByUserIdAndIsActiveTrue(
+                user.getId(), PageRequest.of(page - 1, size)
+        );
+
+        List<PodcastResponse> content = podcastPage.getContent().stream()
+                .map(p -> {
+                    PodcastResponse dto = new PodcastResponse();
+                    dto.setId(p.getId());
+                    dto.setTitle(p.getTitle());
+                    dto.setDescription(p.getDescription());
+                    dto.setAudioUrl(p.getAudioUrl());
+                    dto.setImageUrl(p.getImageUrl());
+                    dto.setActive(p.isActive());
+                    dto.setCreatedAt(p.getCreatedAt());
+                    dto.setUpdatedAt(p.getUpdatedAt());
+                    dto.setCategories(p.getCategories()
+                            .stream()
+                            .map(Category::getName)
+                            .toList());
+                    return dto;
+                })
+                .toList();
 
         PodcastPageResponse response = new PodcastPageResponse();
-        response.setContent(podcast.getContent());
-        response.setTotalPages(podcast.getTotalPages());
-        response.setPageNumber(podcast.getNumber());
-        response.setTotalElements(podcast.getTotalElements());
+        response.setContent(content);
+        response.setTotalPages(podcastPage.getTotalPages());
+        response.setPageNumber(podcastPage.getNumber());
+        response.setTotalElements(podcastPage.getTotalElements());
         return response;
     }
+
 
     // 5. Update Podcast
     public Podcast updatePodcast(Long id, String title, String description, MultipartFile file, MultipartFile file1, List<Long> categoryIds) throws IOException {
@@ -151,8 +213,36 @@ public class PodcastService {
     }
 
     // 8. Tìm podcast qua tên category
-    public List<Podcast> getPodcastsByCategoryName(String categoryName) {
-        return podcastRepository.findByCategoryName(categoryName);
+    @Transactional(readOnly = true)
+    public List<PodcastResponse> getPodcastsByCategoryName(String categoryName) {
+        List<Podcast> podcasts = podcastRepository.findByCategoryName(categoryName);
+
+        return podcasts.stream().map(this::mapToResponse).toList();
     }
+
+    private PodcastResponse mapToResponse(Podcast podcast) {
+        PodcastResponse response = new PodcastResponse();
+        response.setId(podcast.getId());
+        response.setTitle(podcast.getTitle());
+        response.setDescription(podcast.getDescription());
+        response.setAudioUrl(podcast.getAudioUrl());
+        response.setImageUrl(podcast.getImageUrl());
+        response.setActive(podcast.isActive());
+        response.setCreatedAt(podcast.getCreatedAt());
+        response.setUpdatedAt(podcast.getUpdatedAt());
+
+        if (podcast.getCategories() != null) {
+            response.setCategories(
+                    podcast.getCategories()
+                            .stream()
+                            .map(category -> category.getName())
+                            .toList()
+            );
+        }
+
+        return response;
+    }
+
+
 }
 

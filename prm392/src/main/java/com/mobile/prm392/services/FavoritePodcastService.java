@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -26,20 +27,40 @@ public class FavoritePodcastService {
     private IPodcastRepository podcastRepository;
 
     // 1. Lấy danh sách favorite của user
+    @Transactional(readOnly = true)
     public FavoritePodcastPageResonse getFavoritesOfCurrentUser(int page, int size) {
         Long userId = authenticationService.getCurrentUser().getId();
-        Page favorite = favoritePodcastRepository.findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
+        Page<FavoritePodcast> favoritePage = favoritePodcastRepository
+                .findByUserIdAndIsActiveTrue(userId, PageRequest.of(page - 1, size));
+
+        // Map sang DTO để tránh lỗi Lazy
+        List<FavoritePodcastResponse> dtoList = favoritePage.getContent().stream().map(fav -> {
+            FavoritePodcastResponse dto = new FavoritePodcastResponse();
+            dto.setId(fav.getId());
+            dto.setActive(fav.isActive());
+            if (fav.getPodcast() != null) {
+                dto.setPodcastId(fav.getPodcast().getId());
+                dto.setPodcastTitle(fav.getPodcast().getTitle());
+            }
+            if (fav.getUser() != null) {
+                dto.setUserId(fav.getUser().getId());
+                dto.setUsername(fav.getUser().getUsername());
+            }
+            return dto;
+        }).toList();
 
         FavoritePodcastPageResonse response = new FavoritePodcastPageResonse();
-        response.setContent(favorite.getContent());
-        response.setPageNumber(favorite.getNumber());
-        response.setTotalElements(favorite.getTotalElements());
-        response.setTotalPages(favorite.getTotalPages());
+        response.setContent(dtoList);
+        response.setPageNumber(favoritePage.getNumber());
+        response.setTotalElements(favoritePage.getTotalElements());
+        response.setTotalPages(favoritePage.getTotalPages());
         return response;
     }
 
+
     // 2. Thêm hoặc đánh dấu favorite
-    public FavoritePodcast toggleFavorite(Long podcastId) {
+    @Transactional
+    public FavoritePodcastResponse toggleFavorite(Long podcastId) {
         var user = authenticationService.getCurrentUser();
         var podcast = podcastRepository.findById(podcastId)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast không tồn tại"));
@@ -50,11 +71,24 @@ public class FavoritePodcastService {
 
         favorite.setUser(user);
         favorite.setPodcast(podcast);
-        favorite.setActive(true); // luôn đánh dấu active khi toggle
-        return favoritePodcastRepository.save(favorite);
+        favorite.setActive(true);
+
+        FavoritePodcast saved = favoritePodcastRepository.save(favorite);
+
+        // Convert sang DTO (map dữ liệu cần thiết)
+        FavoritePodcastResponse dto = new FavoritePodcastResponse();
+        dto.setId(saved.getId());
+        dto.setActive(saved.isActive());
+        dto.setPodcastId(podcast.getId());
+        dto.setPodcastTitle(podcast.getTitle());
+        dto.setUserId(user.getId());
+        dto.setUsername(user.getUsername());
+        return dto;
     }
 
+
     // 3. Xóa mềm favorite
+    @Transactional
     public boolean removeFavorite(Long podcastId) {
         User user = authenticationService.getCurrentUser();
 

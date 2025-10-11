@@ -3,6 +3,7 @@ package com.mobile.prm392.api;
 import com.mobile.prm392.entities.PodcastRating;
 import com.mobile.prm392.model.podcastRating.PodcastRatingPageResponse;
 import com.mobile.prm392.model.podcastRating.PodcastRatingRequest;
+import com.mobile.prm392.model.podcastRating.PodcastRatingResponse;
 import com.mobile.prm392.services.PodcastRatingService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,11 +24,11 @@ public class PodcastRatingApi {
     // 1. Rate podcast (tạo mới hoặc update)
     @PostMapping("/ratings/{podcastId}")
     @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
-    public ResponseEntity<PodcastRating> ratePodcast(
+    public ResponseEntity ratePodcast(
             @PathVariable Long podcastId,
             @RequestBody PodcastRatingRequest request) {
 
-        PodcastRating savedRating = podcastRatingService.ratePodcast(podcastId, request.getRating(), request.getComment());
+        PodcastRatingResponse savedRating = podcastRatingService.ratePodcast(podcastId, request.getRating(), request.getComment());
         return ResponseEntity.ok(savedRating);
     }
 

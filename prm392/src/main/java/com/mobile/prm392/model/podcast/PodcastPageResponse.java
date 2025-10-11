@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class PodcastPageResponse {
-    private List<Podcast> content;
+    private List<PodcastResponse> content;
     private int pageNumber;
     private long totalElements;
     private int totalPages;
