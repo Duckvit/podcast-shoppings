@@ -41,6 +41,7 @@ public class FavoritePodcastService {
             if (fav.getPodcast() != null) {
                 dto.setPodcastId(fav.getPodcast().getId());
                 dto.setPodcastTitle(fav.getPodcast().getTitle());
+                dto.setPodcastImage(fav.getPodcast().getImageUrl());
             }
             if (fav.getUser() != null) {
                 dto.setUserId(fav.getUser().getId());
