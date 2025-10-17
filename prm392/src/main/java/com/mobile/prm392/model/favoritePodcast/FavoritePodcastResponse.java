@@ -8,6 +8,7 @@ public class FavoritePodcastResponse {
     private boolean active;
     private Long podcastId;
     private String podcastTitle;
+    private String podcastImage;
     private Long userId;
     private String username;
 }
