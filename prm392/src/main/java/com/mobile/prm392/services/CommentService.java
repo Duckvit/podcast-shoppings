@@ -12,4 +12,7 @@ public interface CommentService {
 
     List<Comment> getAllCommentsByPodcastId(Long podcastId);
 
+    Comment updateComment(Long id, String newContent);
+
+    void deleteComment(Long id);
 }
