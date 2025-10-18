@@ -23,7 +23,7 @@ public class CommentServiceImpl implements CommentService {
     private IPodcastRepository podcastRepository;
 
     @Override
-    public Comment createComment(Long podcastId, String commentUser, String content){
+    public Comment createComment(Long podcastId, String commentUser, String content) {
         // Lấy podcast theo id
         Podcast podcast = podcastRepository.findById(podcastId)
                 .orElseThrow(() -> new EntityNotFoundException("Podcast with id " + podcastId + " not found"));
@@ -47,6 +47,21 @@ public class CommentServiceImpl implements CommentService {
 
         // Lấy danh sách comment
         return commentRepository.findAllByPodcastIdOrderByCreatedAtDesc(podcast.getId());
+    }
+
+    public Comment updateComment(Long id, String newContent) {
+        Comment comment = commentRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Comment not found with id " + id));
+        comment.setContent(newContent);
+        comment.setUpdatedAt(LocalDateTime.now());
+        return commentRepository.save(comment);
+    }
+
+    public void deleteComment(Long id) {
+        if (!commentRepository.existsById(id)) {
+            throw new EntityNotFoundException("Comment not found with id " + id);
+        }
+        commentRepository.deleteById(id);
     }
 
 }

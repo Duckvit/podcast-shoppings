@@ -21,13 +21,13 @@ public class CommentAPI {
 
     @PostMapping("/create")
     public ResponseEntity<?> createComment(@RequestBody CommentRequest request) {
-        try{
+        try {
             return ResponseEntity.ok(commentService.createComment(
                     request.getPodcastId(),
                     request.getCommentUser(),
                     request.getContent()
             ));
-        } catch (Exception ex){
+        } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(ex.getMessage());
         }
     }
@@ -41,6 +41,33 @@ public class CommentAPI {
             return ResponseEntity.status(404).body(ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.status(500).body("Error: " + ex.getMessage());
+        }
+    }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateComment(
+            @PathVariable Long id,
+            @RequestBody CommentRequest request
+    ) {
+        try {
+            Comment updated = commentService.updateComment(id, request.getContent());
+            return ResponseEntity.ok(updated);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + ex.getMessage());
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteComment(@PathVariable Long id) {
+        try {
+            commentService.deleteComment(id);
+            return ResponseEntity.ok("Comment deleted successfully");
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + ex.getMessage());
         }
     }
 
