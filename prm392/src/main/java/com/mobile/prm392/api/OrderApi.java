@@ -4,8 +4,10 @@ import com.mobile.prm392.entities.Order;
 import com.mobile.prm392.model.order.CompleteOrderRequest;
 import com.mobile.prm392.model.order.OrderRequest;
 import com.mobile.prm392.model.order.OrderUpdateRequest;
+import com.mobile.prm392.model.order.UpdateAddressRequest;
 import com.mobile.prm392.repositories.IOrderRepository;
 import com.mobile.prm392.services.OrderService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -119,4 +121,16 @@ public class OrderApi {
         }
     }
 
+    @Operation(summary = "Update Order's address", description = "Update address when user have an order")
+    @PutMapping("/update-address")
+    public ResponseEntity<?> updateAddress(@RequestBody UpdateAddressRequest request) {
+        try {
+            Order updateOrder = orderService.updateAddress(request.getOrderId(), request.getAddress());
+            return ResponseEntity.ok(updateOrder);
+        } catch (EntityNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating address: " + ex.getMessage());
+        }
+    }
 }

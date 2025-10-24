@@ -32,7 +32,6 @@ public class CategoryAPI {
     }
 
     @Operation(summary = "Tạo mới category", description = "Thêm một category mới vào hệ thống")
-
     @PostMapping("/admin/create")
     public ResponseEntity<Category> createCategory(@RequestBody Category dto) {
         Category category = categoryService.createCategory(dto); // service tạo Category

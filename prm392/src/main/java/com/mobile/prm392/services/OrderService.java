@@ -53,9 +53,10 @@ public class OrderService {
 //    public OrderPageResponse getAllOrders(int page, int size) {
 //        Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
 //
-////        List<OrderResponse> content = orderPage.getContent().stream()
-////                .map(order -> modelMapper.map(order, OrderResponse.class))
-////                .toList();
+
+    /// /        List<OrderResponse> content = orderPage.getContent().stream()
+    /// /                .map(order -> modelMapper.map(order, OrderResponse.class))
+    /// /                .toList();
 //        List<OrderResponse> content = orderPage.getContent().stream()
 //                .peek(order -> order.getItems().size()) // Ép Hibernate load danh sách items
 //                .map(order -> modelMapper.map(order, OrderResponse.class))
@@ -68,7 +69,6 @@ public class OrderService {
 //        response.setTotalPages(orderPage.getTotalPages());
 //        return response;
 //    }
-
     @Transactional(readOnly = true)
     public OrderPageResponse getAllOrders(int page, int size) {
         Page<Order> orderPage = orderRepository.findByIsActiveTrue(PageRequest.of(page - 1, size));
@@ -275,5 +275,12 @@ public class OrderService {
         order.setUpdatedAt(LocalDateTime.now());
         orderRepository.save(order);
         return true;
+    }
+
+    public Order updateAddress(Long orderId, String newAddress) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("Order not found with id: " + orderId));
+
+        order.setAddress(newAddress);
+        return orderRepository.save(order);
     }
 }
