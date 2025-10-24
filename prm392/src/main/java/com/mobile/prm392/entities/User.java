@@ -3,9 +3,7 @@ package com.mobile.prm392.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.mobile.prm392.model.user.UserResponse;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -80,7 +78,6 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "to")
     @JsonIgnore
     private List<Transaction> transactionsTo; // User có thể tham gia nhiều Transaction
-
 
 
     private boolean isActive = true;

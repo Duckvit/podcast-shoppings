@@ -1,7 +1,6 @@
 package com.mobile.prm392.repositories;
 
 
-
 import com.mobile.prm392.entities.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -21,6 +20,8 @@ public interface IUserRepository extends JpaRepository<User, Long> {
     Optional<User> findByOtpCodeAndEmail(String otp, String email);
 
     Optional<User> findByEmailAndIsActive(String email, boolean isActive);
+
+    Optional<User> findById(Long id);
 
     // Kiểm tra username đã tồn tại chưa
     boolean existsByUsername(String username);
