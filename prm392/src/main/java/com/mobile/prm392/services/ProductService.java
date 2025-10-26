@@ -105,14 +105,11 @@ public class ProductService {
 
     // Xóa sản phẩm
     public boolean deleteProduct(Long id) {
-        boolean result;
-        Product product = productRepository.getById(id);
-        if (product == null) {
-            throw new EntityNotFoundException("Product not found with id: " + id);
-        }
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + id));
         product.setActive(false);
-        result = true;
         productRepository.save(product);
-        return result;
+        return true;
     }
+
 }
