@@ -88,10 +88,10 @@ public class ProductApi {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity deleteProduct(@PathVariable Long id) {
         boolean result = productService.deleteProduct(id);
-        String resultString;
+        String resultString = "";
         if(result){
             resultString = "Delete successfully";
         }
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(resultString);
     }
 }

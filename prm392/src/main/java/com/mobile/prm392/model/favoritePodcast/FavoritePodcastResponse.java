@@ -9,6 +9,7 @@ public class FavoritePodcastResponse {
     private Long podcastId;
     private String podcastTitle;
     private String podcastImage;
+    private String podcastURI;
     private Long userId;
     private String username;
 }
