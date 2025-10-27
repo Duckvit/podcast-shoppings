@@ -1,0 +1,50 @@
+package com.mobile.prm392.entities;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Data
+@Entity
+@Getter
+@Setter
+@Table(name = "`order`") // order la tu khoa trong sql nen can dat trong dau ``
+public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    private Double totalAmount;
+
+    @Column(length = 20)
+    private String status = "pending"; // pending, paid, shipped
+
+    private String address;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL) // Casecade ALL de khi xoa order thi xoa het order item luon ( chuc nang cho phep luu cac bang reference toi no )
+    @JsonManagedReference
+    private List<OrderItem> items;
+
+
+    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private Payment payment; // Mỗi Order chỉ có 1 Payment
+
+    private boolean isActive = true;
+}
