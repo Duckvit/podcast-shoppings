@@ -9,6 +9,14 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping Render app
+      - name: Wake up Render app
         run: |
-          curl -s https://podcast-shoppings.onrender.com/api/emails/run-email-job > /dev/null
+          curl -s -L https://podcast-shoppings.onrender.com > /dev/null
+
+      - name: Wait for Render to wake up
+        run: |
+          sleep 20  # chờ 20 giây để app khởi động lại hoàn toàn
+
+      - name: Trigger email job
+        run: |
+          curl -s -L https://podcast-shoppings.onrender.com/api/emails/run-email-job > /dev/null
