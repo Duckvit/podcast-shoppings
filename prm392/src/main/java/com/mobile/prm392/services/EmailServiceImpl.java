@@ -108,13 +108,23 @@ public class EmailServiceImpl {
 
             response.setStatusCode(200);
             response.setMessage("Gửi email tới: " + emailRequest.getRecipient() + " thành công");
+            
+            System.out.println("✅ Email sent successfully to: " + emailRequest.getRecipient());
 
         } catch (OurException e) {
+            System.err.println("❌ Business Logic Error: " + e.getMessage());
             response.setStatusCode(400);
             response.setMessage(e.getMessage());
         } catch (MessagingException e) {
+            System.err.println("❌ Email Sending Error: " + e.getMessage());
+            e.printStackTrace();
             response.setStatusCode(500);
             response.setMessage("Đã xảy ra lỗi khi gửi email: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("❌ Unexpected Error: " + e.getMessage());
+            e.printStackTrace();
+            response.setStatusCode(500);
+            response.setMessage("Lỗi không xác định: " + e.getMessage());
         }
         return response;
     }
