@@ -15,7 +15,7 @@ public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     private String comment;
     private float star;
     private LocalDateTime dateCreated;
@@ -25,6 +25,6 @@ public class Review {
     private User user;
 
     @ManyToOne
-    @JoinColumn(name = "product_id", nullable = false)
-    private Product product;
+    @JoinColumn(name = "order_item_id", nullable = false)
+    private OrderItem orderItem;
 }
