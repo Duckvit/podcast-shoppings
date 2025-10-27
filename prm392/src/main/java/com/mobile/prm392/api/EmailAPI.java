@@ -21,6 +21,13 @@ public class EmailAPI {
     @Autowired
     private EmailServiceImpl emailService;
 
+    @GetMapping("/run-email-job")
+    public ResponseEntity<String> runEmailJob() {
+        emailService.processPendingEmails();
+        return ResponseEntity.ok("Emails processed");
+    }
+
+
     @Operation(summary = "Gửi mail tới người nhận (recipient)")
     @PostMapping("/send")
     public ResponseEntity<Response> sendEmail(@RequestBody EmailRequest emailRequest) {
