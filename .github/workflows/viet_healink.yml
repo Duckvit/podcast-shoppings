@@ -25,6 +25,7 @@ jobs:
           distribution: 'microsoft'
 
       - name: Build with Maven
+        working-directory: ./prm392
         run: mvn clean install
 
       - name: Upload artifact for deployment job
@@ -60,4 +61,5 @@ jobs:
           app-name: 'Healink'
           slot-name: 'Production'
           package: '*.jar'
+
           
