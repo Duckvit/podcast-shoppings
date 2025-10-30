@@ -1,22 +1,27 @@
-name: Ping Render App
+name: Ping Render & Azure Email Job
 
 on:
   schedule:
     - cron: "*/5 * * * *"  # chạy mỗi 5 phút
-  workflow_dispatch:       # cho phép chạy thủ công
+  workflow_dispatch:         # có thể chạy thủ công nếu muốn
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
       - name: Wake up Render app
         run: |
-          curl -s -L https://podcast-shoppings.onrender.com > /dev/null
+          echo "🟡 Waking up Render app..."
+          curl -s -L https://podcast-shoppings.onrender.com > /dev/null || echo "⚠️ Render app may be sleeping"
 
       - name: Wait for Render to wake up
         run: |
-          sleep 20  # chờ 20 giây để app khởi động lại hoàn toàn
+          echo "⏳ Waiting for Render app to stabilize..."
+          sleep 20
 
-      - name: Trigger email job
+      - name: Trigger Azure email job
         run: |
-          curl -s -L https://healink-ewaybqg9encadbe8.southeastasia-01.azurewebsites.net/api/emails/run-email-job > /dev/null
+          echo "📧 Triggering scheduled email job..."
+          curl -s -L https://healink-ewaybqg9encadbe8.southeastasia-01.azurewebsites.net/api/emails/run-email-job \
+          -o /dev/null -w "%{http_code}\n"
