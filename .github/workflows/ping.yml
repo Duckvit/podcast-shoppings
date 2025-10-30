@@ -13,7 +13,12 @@ jobs:
       - name: Wake up Render app
         run: |
           echo "🟡 Waking up Render app..."
-          curl -s -L https://podcast-shoppings.onrender.com > /dev/null || echo "⚠️ Render app may be sleeping"
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://podcast-shoppings.onrender.com)
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Render app responded successfully!"
+          else
+            echo "⚠️ Render app may still be sleeping (HTTP $response)"
+          fi
 
       - name: Wait for Render to wake up
         run: |
@@ -22,6 +27,14 @@ jobs:
 
       - name: Trigger Azure email job
         run: |
-          echo "📧 Triggering scheduled email job..."
-          curl -s -L https://healink-ewaybqg9encadbe8.southeastasia-01.azurewebsites.net/api/emails/run-email-job \
-          -o /dev/null -w "%{http_code}\n"
+          echo "📧 Triggering scheduled email job on Azure..."
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://healink-ewaybqg9encadbe8.southeastasia-01.azurewebsites.net/api/emails/run-email-job)
+          if [ "$response" -eq 200 ]; then
+            echo "✅ Azure email job triggered successfully!"
+          else
+            echo "❌ Azure email job failed with HTTP code: $response"
+          fi
+
+      - name: Log timestamp
+        run: |
+          echo "🕒 Job completed at $(date '+%Y-%m-%d %H:%M:%S')"
