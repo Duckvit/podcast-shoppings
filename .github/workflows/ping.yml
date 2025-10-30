@@ -19,4 +19,4 @@ jobs:
 
       - name: Trigger email job
         run: |
-          curl -s -L https://podcast-shoppings.onrender.com/api/emails/run-email-job > /dev/null
+          curl -s -L https://healink-ewaybqg9encadbe8.southeastasia-01.azurewebsites.net/api/emails/run-email-job > /dev/null
