@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -216,7 +217,11 @@ public class EmailServiceImpl {
     @Scheduled(fixedRate = 60000)
     public void processPendingEmails() {
         Response response = new Response();
-        List<ScheduledEmail> pending = scheduledEmailRepository.findByStatusAndSendTimeBefore("PENDING", LocalDateTime.now());
+        ZoneId vietnamZone = ZoneId.of("Asia/Ho_Chi_Minh");
+        LocalDateTime nowInVietnam = LocalDateTime.now(vietnamZone);
+
+        List<ScheduledEmail> pending = scheduledEmailRepository
+                .findByStatusAndSendTimeBefore("PENDING", nowInVietnam);
         for (ScheduledEmail e : pending) {
             try {
                 // Tạo request gửi email
@@ -230,10 +235,15 @@ public class EmailServiceImpl {
                 e.setStatus("SENT");
             } catch (Exception ex) {
                 e.setStatus("FAILED");
+                System.err.println("❌ Failed to send email for user " + e.getUser().getEmail() + ": " + ex.getMessage());
             }
             e.setUpdatedAt(LocalDateTime.now());
             scheduledEmailRepository.save(e);
         }
+        System.out.println("🔹 Server time (UTC): " + LocalDateTime.now());
+        System.out.println("🔹 Vietnam time: " + nowInVietnam);
+        System.out.println("🔹 Checking pending emails before: " + nowInVietnam);
+
     }
 
     public String sendPasswordCreateUser(String email, String username) {
