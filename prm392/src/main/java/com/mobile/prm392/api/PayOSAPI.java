@@ -78,8 +78,8 @@ public class PayOSAPI {
             // Tạo dữ liệu thanh toán
             long orderCode = System.currentTimeMillis() / 1000;
             String description = "Thanh toán đơn hàng #" + order.getId();
-            String returnUrl = "http://localhost:5173/payment-success"; // 🔧 chỉnh theo FE
-            String cancelUrl = "http://localhost:5173/payment-cancel";
+            String returnUrl = "https://web-healink-prm-392.vercel.app/payment-success"; // 🔧 chỉnh theo FE
+            String cancelUrl = "https://web-healink-prm-392.vercel.app/payment-cancel";
 
             CreatePaymentLinkRequest paymentData = CreatePaymentLinkRequest.builder()
                     .orderCode(orderCode)
