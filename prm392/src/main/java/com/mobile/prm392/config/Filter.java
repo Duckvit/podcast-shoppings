@@ -41,9 +41,9 @@ public class Filter extends OncePerRequestFilter {
             "/api/gemini/chat",
             "/api/auth/email-existed",
             "/api/auth/forgot-password",
-            "/payos/webhook",
-            "/payos/test-webhook",
-            "/payos/receive-hook"
+            "/api/payos/webhook",
+            "/api/payos/test-webhook",
+            "/api/payos/receive-hook"
     );
 
     public boolean checkIsPublicAPI(String uri) {
