@@ -90,7 +90,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Cho phép tất cả các nguồn gốc (không nên dùng trong production)
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://web-healink-prm-392-68p3zxn1o-ducky1103s-projects.vercel.app"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "https://web-healink-prm-392.vercel.app"));
 
         // Cho phép tất cả các phương thức HTTP
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
