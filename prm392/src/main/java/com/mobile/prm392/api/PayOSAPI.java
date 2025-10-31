@@ -30,7 +30,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/payos")
+@RequestMapping("/api/payos")
 @CrossOrigin("*")
 public class PayOSAPI {
     private final PayOS payOS;
